@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.db
+*.db-shm
+*.db-wal
+*.suo
+*.user
+*.VC.db
+*.opendb
+*.vscode/
+*.vsix
+*.vsidx
+
+# 빌드 결과물
+Debug/
+Release/
+x64/
+*.exe
+*.obj
+*.dll
+*.pdb
+*.log

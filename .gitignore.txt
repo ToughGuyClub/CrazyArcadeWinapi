@@ -1,0 +1,19 @@
+# Visual Studio stuff
+.vs/
+*.user
+*.suo
+*.VC.db
+*.opendb
+*.ipch/
+*.db-shm
+*.db-wal
+
+# Build results
+Debug/
+Release/
+*.obj
+*.exe
+*.log
+*.pch
+
+
