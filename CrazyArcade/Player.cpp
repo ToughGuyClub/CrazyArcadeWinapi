@@ -36,6 +36,7 @@ void Player::Init_Player(POINT pos)
     this->selected_character = 1;
    
 	this->move_cnt = 0;
+    this->player_num = 1;
     // 스프라이트 핸들 초기화
     this->hSprite = NULL;
 }
@@ -49,7 +50,10 @@ void Player::Draw_Player(HDC hdc, Player* p, int character)
     int oy = (WINDOW_HEIGHT - mapSize) / 2;
     float drawX = 85 + ox + p->px * tile;
     float drawY = oy + p->py * tile + 20;
+    
     HBITMAP hbitmapPlayer = ResourceManager::GetBitmap(BitmapID::Player1Moving);
+  if(p->GetPlayerNum() == 2)
+      hbitmapPlayer = ResourceManager::GetBitmap(BitmapID::Player2Moving);
     HDC memDC = CreateCompatibleDC(hdc);
     HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapPlayer);
     // 현재 방향에 따라 스프라이트의 위치를 계산

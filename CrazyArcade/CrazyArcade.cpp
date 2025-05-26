@@ -203,8 +203,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 
                 HBITMAP recolored = AdjustBitmapHueWithFilter(original, p1.GetColor(), hueFilterMin, 20);
                 ResourceManager::SetBitmap(BitmapID::Player1Moving, recolored);
+
+				original = ResourceManager::GetBitmap(BitmapID::Player2Moving);
+				recolored = AdjustBitmapHueWithFilter(original, p2.GetColor(), hueFilterMin, 20);
+				ResourceManager::SetBitmap(BitmapID::Player2Moving, recolored);
+
                 p1.Init_Player(p1_start_point);
                 p2.Init_Player(p2_start_point);
+                p2.SetPlayerNum(2);
                 init_board(board);
                 SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
                 SetTimer(hWnd, 2, 50, NULL);
