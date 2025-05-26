@@ -83,6 +83,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
   
 
 }
+
+
+
+
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     
@@ -94,28 +99,49 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static std::vector<Bomb> p1bombs;
     static std::vector<Bomb> p2bombs;
 	static bool game_started = false;
+    static int p1_check_color_pos;
+	static int p2_check_color_pos;
     switch (msg) {
     case WM_CREATE:
-       
+        p1_check_color_pos = 270;
+        p2_check_color_pos = 270;
+        p1.SetColor(0);
+		p2.SetColor(0);
         break;
     case WM_KEYDOWN:
         if (wParam < 256) keyStates[wParam] = true;
-        if (wParam == VK_SPACE) {
-           
-            if (p1.GetMaxBomb() > p1bombs.size()) {
-                Bomb newBomb;
-                newBomb.make_Bomb(p1, board);
+        if (game_started && selected_stage) {
+            if (wParam == VK_SPACE) {
 
-                p1bombs.push_back(newBomb);
+                if (p1.GetMaxBomb() > p1bombs.size()) {
+                    Bomb newBomb;
+                    newBomb.make_Bomb(p1, board);
+
+                    p1bombs.push_back(newBomb);
+                }
+            }
+            if (wParam == VK_RETURN) {
+
+                if (p2.GetMaxBomb() > p2bombs.size()) {
+                    Bomb newBomb;
+                    newBomb.make_Bomb(p2, board);
+
+                    p2bombs.push_back(newBomb);
+                }
             }
         }
-        if (wParam == VK_RETURN) {
-
-            if (p2.GetMaxBomb() > p2bombs.size()) {
-            Bomb newBomb;
-            newBomb.make_Bomb(p2, board);
-
-            p2bombs.push_back(newBomb);
+        else if (game_started) {
+            if (wParam == VK_LEFT) {
+                if (p2_check_color_pos > 270) {
+					p2_check_color_pos -= 155;
+                    p2.SetColor(p2.GetColor() - 1);
+                }
+            }
+            else if (wParam == VK_RIGHT) {
+                if (p2_check_color_pos < 1200) {
+                    p2_check_color_pos += 155;
+                    p2.SetColor(p2.GetColor() + 1);
+                }
             }
         }
         InvalidateRect(hWnd, NULL, FALSE);
@@ -149,9 +175,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     p2bombs.erase(p2bombs.begin() + i);
                 }
             }
+			
             break;
             }
-       
+   
         InvalidateRect(hWnd, NULL, FALSE);
         break;
     }
@@ -169,12 +196,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 selected_stage = 1;
                 POINT p1_start_point = { 8,18 };
                 POINT p2_start_point = { 11,18 };
-
+                int hueFilterMin = 0;   // 원하는 색 필터 범위
+                int hueFilterMax = 360;
+             
+                HBITMAP original = ResourceManager::GetBitmap(BitmapID::Player1Moving);
+                
+                HBITMAP recolored = AdjustBitmapHueWithFilter(original, p1.GetColor(), hueFilterMin, 20);
+                ResourceManager::SetBitmap(BitmapID::Player1Moving, recolored);
                 p1.Init_Player(p1_start_point);
                 p2.Init_Player(p2_start_point);
                 init_board(board);
                 SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
                 SetTimer(hWnd, 2, 50, NULL);
+              
+              
             }
             else  if (wParam == '2') {
                 selected_stage = 2;
@@ -182,6 +217,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             else  if (wParam == '3') {
                 selected_stage = 3;
             }
+            else if (wParam == 'a') {
+             if (game_started) {
+                 
+                    if (p1_check_color_pos > 270) {
+                        p1_check_color_pos -= 155;
+                        p1.SetColor(p1.GetColor() - 1);
+                    }
+               
+                
+                 }
+            }
+            else if (wParam == 'd') {
+                if (game_started) {
+                if (p1_check_color_pos < 1200) {
+                    p1_check_color_pos += 155;
+                    p1.SetColor(p1.GetColor() + 1);
+                }
+            }
+            }
+        }
+        if (selected_stage) {
+			
+          
         }
         break;
     case WM_PAINT: {
@@ -212,6 +270,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					StretchBlt(mem, 0, 0, 1500, 900, selectStageDC, 0, 0, 1500, 900, SRCCOPY);
 					SelectObject(selectStageDC, oldSelectStageBitmap);
 					DeleteObject(selectStageBitmap);
+
+                    //체크표시 그리기
+					HBITMAP p1CheckBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_P1_CHECK));
+					HDC p1CheckDC = CreateCompatibleDC(mem);
+					HBITMAP oldP1CheckBitmap = (HBITMAP)SelectObject(p1CheckDC, p1CheckBitmap);
+                    TransparentBlt(mem, p1_check_color_pos, 670, 100, 50, p1CheckDC, 0, 0, 224, 150, RGB(255,0,255));
+					HBITMAP p2CheckBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_P2_CHECK));
+					HDC p2CheckDC = CreateCompatibleDC(mem);
+					HBITMAP oldP2CheckBitmap = (HBITMAP)SelectObject(p2CheckDC, p2CheckBitmap);
+                    TransparentBlt(mem, p2_check_color_pos, 640, 100, 50, p2CheckDC, 0, 0, 224, 150, RGB(255, 0, 255));
+
 					DeleteDC(selectStageDC);
                 }
 				else if (selected_stage == 1) {
@@ -220,7 +289,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
                     StretchBlt(mem, 0, 0, 1450, 900, uiDC, 0, 0, 1040, 780, SRCCOPY);
 
-                    DrawGrid(mem, g_hInst, board);
+                    DrawGrid(mem, g_hInst, board,&p1,&p2);
 
 
 
@@ -228,8 +297,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
                     draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
 
-                    p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
-                    p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
+                    //p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
+                    //p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
 
                     //임시로 플레이어 사과 출력
                     int tempapple = p1.GetCurrentApple();
@@ -244,7 +313,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     DrawOutlinedText(mem, 1370, 270, std::to_wstring(tempapple2).c_str());
 
                    
-
+					
                     SelectObject(uiDC, oldUIBitmap);
                     DeleteObject(gameui);
                     DeleteDC(uiDC);
@@ -256,8 +325,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             BitBlt(hdc, 0, 0, 1500, 900, mem, 0, 0, SRCCOPY);
             SelectObject(mem, oldBmp);
             DeleteObject(bmp);
-			
-		
+         
             DeleteDC(mem);
             EndPaint(hWnd, &ps);
         

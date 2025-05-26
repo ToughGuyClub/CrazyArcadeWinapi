@@ -14,6 +14,9 @@ class Player {
     int bomb_distance;
     int maxBomb;
     int currrentApple;
+	int selected_character;
+    int move_cnt;
+    int color;
     HBITMAP hSprite;
 public:
     Player();
@@ -22,7 +25,7 @@ public:
    
     void Init_Player(POINT pos);
 
-    void Draw_Player(HDC hdc, Player* p, COLORREF color);
+    void Draw_Player(HDC hdc, Player* p, int character);
 
 public:
     // Getter
@@ -36,6 +39,9 @@ public:
     int GetBomb_distance()const { return bomb_distance; }
     int GetMaxBomb()const { return maxBomb; }
 	int GetCurrentApple() const { return currrentApple; }
+	int GetSelectedCharacter() const { return selected_character; }
+	int GetColor() const { return color; }
+	int GetMoveCount() const { return move_cnt; }
     // Setter
     void SetX(int value) { x = value; }
     void SetY(int value) { y = value; }
@@ -47,6 +53,9 @@ public:
     void SetBomb_distance(int value) { bomb_distance = value; }
     void SetMaxBomb(int value) { maxBomb = value; }
 	void SetCurrentApple(int value) { currrentApple = value; }
+	void SetSelectedCharacter(int value) { selected_character = value; }
+	void SetColor(int value) { color = value; }
+	void SetMoveCount(int value) { move_cnt = value; }
     // 위치 비교
     bool IsStopped() const { return (px == x && py == y); }
     bool IsMoving() const { return (px != destX || py != destY); }
@@ -64,3 +73,15 @@ public:
 void HandlePlayerMovement(Player& player, const bool* keyStates, int upKey, int downKey, int leftKey, int rightKey, Board board[MAP_TILES][MAP_TILES]);
 void UpdatePlayerPosition(Player& player, float speed);
 
+
+void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2);
+
+
+//플레이어 색상 변경을 위해 필요한 함수들
+
+void RGBtoHSV(BYTE r, BYTE g, BYTE b, double& h, double& s, double& v);
+// HSV → RGB
+void HSVtoRGB(double h, double s, double v, BYTE& r, BYTE& g, BYTE& b);
+bool IsInColorRange(BYTE r, BYTE g, BYTE b, int hueMin, int hueMax);
+
+HBITMAP AdjustBitmapHueWithFilter(HBITMAP hBitmap, double hueShift, int hueFilterMin, int hueFilterMax);

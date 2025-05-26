@@ -24,7 +24,12 @@ enum class BitmapID {
     ForestObstacle4,
     ForestObstacle5,
     ForestTree,
+    //플레이어
+    Player1Moving,
+    Player2Moving,
+    PlayerMovingMask,
     // 필요한 리소스 계속 추가
+    Count   //마지막 값
 };
 
 class ResourceManager {
@@ -32,6 +37,7 @@ public:
     static void LoadAll(HINSTANCE hInst);
     static void UnloadAll();
     static HBITMAP GetBitmap(BitmapID id);
+   static  void SetBitmap(BitmapID id, HBITMAP hBitmap);
 
 private:
     static std::map<BitmapID, HBITMAP> bitmapMap;

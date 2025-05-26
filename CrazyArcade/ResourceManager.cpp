@@ -25,7 +25,9 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
     bitmapMap[BitmapID::ForestObstacle4] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_4));
     bitmapMap[BitmapID::ForestObstacle5] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_5));
     bitmapMap[BitmapID::ForestTree] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_BIG_TREE));
-
+	bitmapMap[BitmapID::Player1Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
+    bitmapMap[BitmapID::Player2Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
+	bitmapMap[BitmapID::PlayerMovingMask] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER_MASK));
 
 
     // 여기에 추가 비트맵도 계속 등록
@@ -40,4 +42,11 @@ void ResourceManager::UnloadAll() {
 
 HBITMAP ResourceManager::GetBitmap(BitmapID id) {
     return bitmapMap[id];
+}
+void ResourceManager::SetBitmap(BitmapID id, HBITMAP hBitmap) {
+    // 기존 비트맵 있으면 삭제
+    if (bitmapMap[id]) {
+        DeleteObject(bitmapMap[id]);
+    }
+    bitmapMap[id] = hBitmap;
 }

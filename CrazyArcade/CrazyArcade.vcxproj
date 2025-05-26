@@ -162,6 +162,7 @@
     <ResourceCompile Include="Resource2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\Image\Player\Ba_Walk_Back.bmp" />
     <Image Include="..\..\crazyArcadeResource\Resource\1.bmp" />
     <Image Include="..\..\crazyarcaderesource\resource\bitmap1.bmp" />
     <Image Include="..\..\crazyarcaderesource\resource\bitmap2.bmp" />
@@ -199,11 +200,15 @@
     <Image Include="Resource\forest_tile\tile_8.bmp" />
     <Image Include="Resource\forest_tile\tile_9.bmp" />
     <Image Include="Resource\game_start\Back_Login.bmp" />
+    <Image Include="Resource\game_start\P1_Check.bmp" />
+    <Image Include="Resource\game_start\P2_Check.bmp" />
     <Image Include="Resource\game_start\Select_Stage.bmp" />
     <Image Include="Resource\Game_UI.bmp" />
     <Image Include="Resource\left1.bmp" />
     <Image Include="Resource\left2.bmp" />
     <Image Include="Resource\namu_map1.bmp" />
+    <Image Include="Resource\Player\bazzi.bmp" />
+    <Image Include="Resource\Player\bazzi_mask.bmp" />
     <Image Include="Resource\pop.bmp" />
     <Image Include="Resource\right1.bmp" />
     <Image Include="Resource\right2.bmp" />

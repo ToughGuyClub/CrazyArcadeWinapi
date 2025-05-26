@@ -225,5 +225,20 @@
     <Image Include="Resource\game_start\Select_Stage.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="..\..\..\..\Downloads\Image\Player\Ba_Walk_Back.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\Player\bazzi.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\Player\bazzi_mask.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\game_start\P1_Check.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\game_start\P2_Check.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

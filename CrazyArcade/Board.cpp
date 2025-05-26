@@ -1,5 +1,6 @@
 #include "Board.h"
 #include"ResourceManager.h"
+#include"Player.h"
 void init_board(Board board[MAP_TILES][MAP_TILES]) {
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES/2;
@@ -47,96 +48,3 @@ void init_board(Board board[MAP_TILES][MAP_TILES]) {
 }
 
 
-void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES]) {
-    int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
-    int tile = mapSize / MAP_TILES / 2;
-    int ox = (WINDOW_WIDTH - mapSize) / 2;
-    int oy = (WINDOW_HEIGHT - mapSize) / 2;
-
-    HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-    HPEN oldPen = (HPEN)SelectObject(hdc, pen);
-  
-    HDC tileDC= CreateCompatibleDC(hdc);
-    HBITMAP tilebit[6];
-    tilebit[0] = ResourceManager::GetBitmap(BitmapID::ForestTile1);
-    tilebit[1] = ResourceManager::GetBitmap(BitmapID::ForestTile2);
-    tilebit[2] = ResourceManager::GetBitmap(BitmapID::ForestTile3);
-    tilebit[3] = ResourceManager::GetBitmap(BitmapID::ForestTile4);
-    tilebit[4] = ResourceManager::GetBitmap(BitmapID::ForestTile5);
-    tilebit[5] = ResourceManager::GetBitmap(BitmapID::ForestTile6);
-    HBITMAP  oldTile = (HBITMAP)SelectObject(tileDC, tilebit[0]);
-    HBITMAP obstacleBitmap[5];
-    obstacleBitmap[0] = ResourceManager::GetBitmap(BitmapID::ForestObstacle1);
-    obstacleBitmap[1] = ResourceManager::GetBitmap(BitmapID::ForestObstacle2);
-    obstacleBitmap[2] = ResourceManager::GetBitmap(BitmapID::ForestObstacle3);
-    obstacleBitmap[3] = ResourceManager::GetBitmap(BitmapID::ForestObstacle4);
-    obstacleBitmap[4] = ResourceManager::GetBitmap(BitmapID::ForestObstacle5);
-    HDC obstacleDC = CreateCompatibleDC(hdc);
-    HBITMAP oldObstacleBitmap = (HBITMAP)SelectObject(obstacleDC, obstacleBitmap[0]);
-
-    for (int i = 0; i < MAP_TILES; ++i) {
-        for (int j = 0; j < MAP_TILES; ++j) {
-            COLORREF color;
-            if (board[i][j].tile == 1) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[0]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 2) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[1]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 3) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[2]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 4) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[3]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 5) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[4]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 6) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[5]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            
-            switch (board[i][j].obstacle) {
-            case 3:  // 갈색 (바구니)
-                color = RGB(139, 69, 19); // 나무색
-                break;
-            default:
-                color = RGB(255, 255, 255);
-                break; // 0번 장애물은 그리지 않음
-            }
-
-           
-          
-            if (board[i][j].obstacle == 1) {
-				
-				(HBITMAP)SelectObject(obstacleDC, obstacleBitmap[board[i][j].obstacle_tpye - 1]);
-				TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES-5, board[i][j].pos.y - MAP_TILES-5, 2 * MAP_TILES+10, 2 * MAP_TILES+10, obstacleDC, 0, 0, 68, 67, RGB(255, 0, 255));
-                SelectObject(obstacleDC, oldObstacleBitmap);
-            }
-			
-           
-          
-        }
-       
-    }
-    HBITMAP treebit = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_BIG_TREE));
-    HDC treeDC = CreateCompatibleDC(hdc);
-    HBITMAP oldTreeBitmap = (HBITMAP)SelectObject(treeDC, treebit);
-    TransparentBlt(hdc, board[1][8].pos.x-10, board[1][9].pos.y - 3*MAP_TILES, 7*MAP_TILES, 6 * MAP_TILES, treeDC, 0, 0, 100, 80, RGB(255, 0, 255));
-    SelectObject(treeDC, oldTreeBitmap);
-
-    DeleteDC(treeDC);
-   
-    DeleteDC(obstacleDC);
-    SelectObject(hdc, oldPen);
-    DeleteObject(pen);
-    SelectObject(tileDC, oldTile);
-    DeleteDC(tileDC);
-
-}
