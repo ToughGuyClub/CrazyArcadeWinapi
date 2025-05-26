@@ -196,6 +196,8 @@
     <Image Include="Resource\forest_tile\tile_7.bmp" />
     <Image Include="Resource\forest_tile\tile_8.bmp" />
     <Image Include="Resource\forest_tile\tile_9.bmp" />
+    <Image Include="Resource\game_start\Back_Login.bmp" />
+    <Image Include="Resource\game_start\Select_Stage.bmp" />
     <Image Include="Resource\Game_UI.bmp" />
     <Image Include="Resource\left1.bmp" />
     <Image Include="Resource\left2.bmp" />

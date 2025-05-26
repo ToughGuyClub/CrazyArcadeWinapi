@@ -88,6 +88,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static int selected_stage = 0;
     static std::vector<Bomb> p1bombs;
     static std::vector<Bomb> p2bombs;
+	static bool game_started = false;
     switch (msg) {
     case WM_CREATE:
       
@@ -149,6 +150,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         InvalidateRect(hWnd, NULL, FALSE);
         break;
     }
+    case WM_LBUTTONDOWN: {
+		int pos_x = LOWORD(lParam);
+        if(!game_started&&pos_x<800)
+		game_started = true;
+        
+        InvalidateRect(hWnd, NULL, FALSE);
+        break;
+    }
     case WM_CHAR:
         if (selected_stage == 0) {
             if (wParam == '1') {
@@ -171,45 +180,73 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         break;
     case WM_PAINT: {
-        if (selected_stage) {
+       
             hdc = BeginPaint(hWnd, &ps);
             HDC mem = CreateCompatibleDC(hdc);
             HBITMAP bmp = CreateCompatibleBitmap(hdc, 1500, 900);
             HGDIOBJ oldBmp = SelectObject(mem, bmp);
             RECT rc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };
             FillRect(mem, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            if (!game_started) {
+				// 게임이 시작되지 않은 상태에서의 처리
+				HBITMAP loginBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_LOGIN));
+				HDC loginDC = CreateCompatibleDC(mem);
+				HBITMAP oldLoginBitmap = (HBITMAP)SelectObject(loginDC, loginBitmap);
+				StretchBlt(mem, 0, 0, 1500, 900, loginDC, 0, 0, 800, 600, SRCCOPY);
+				SelectObject(loginDC, oldLoginBitmap);
+				DeleteObject(loginBitmap);
+				DeleteDC(loginDC);
+			
+            }
+            else if (game_started) {
+				// 게임이 시작된 상태에서의 처리
+                if (selected_stage == 0) {
+					HBITMAP selectStageBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_SELECT_STAGE));
+					HDC selectStageDC = CreateCompatibleDC(mem);
+					HBITMAP oldSelectStageBitmap = (HBITMAP)SelectObject(selectStageDC, selectStageBitmap);
+					StretchBlt(mem, 0, 0, 1500, 900, selectStageDC, 0, 0, 1500, 900, SRCCOPY);
+					SelectObject(selectStageDC, oldSelectStageBitmap);
+					DeleteObject(selectStageBitmap);
+					DeleteDC(selectStageDC);
+                }
+				else if (selected_stage == 1) {
+                    HBITMAP gameui = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAMEUI));
+                    HDC uiDC = CreateCompatibleDC(mem);
+                    HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
+                    StretchBlt(mem, 0, 0, 1450, 900, uiDC, 0, 0, 1040, 780, SRCCOPY);
 
-			HBITMAP gameui = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAMEUI));
-			HDC uiDC = CreateCompatibleDC(mem);
-			HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
-			StretchBlt(mem, 0, 0, 1450, 900, uiDC, 0, 0, 1040, 780, SRCCOPY);
+                    DrawGrid(mem, g_hInst, board);
 
-            DrawGrid(mem, g_hInst,board);
-           
-           
 
-           
-            draw_Bomb(mem, g_hInst,p1bombs.data(), static_cast<int>(p1bombs.size()),board,&p1);
-            draw_Bomb(mem, g_hInst,p2bombs.data(), static_cast<int>(p2bombs.size()),board,&p2);
+
+
+                    draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
+                    draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
+
+                    p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
+                    p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
+
+                    //임시로 플레이어 사과 출력
+                    int tempapple = p1.GetCurrentApple();
+
+                    DrawOutlinedText(mem, 170, 280, std::to_wstring(tempapple).c_str());
+
+                    SelectObject(uiDC, oldUIBitmap);
+                    DeleteObject(gameui);
+                    DeleteDC(uiDC);
+				}
             
-            p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
-            p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
-
-            //임시로 플레이어 사과 출력
-            int tempapple = p1.GetCurrentApple();
+            
+            }
 			
-			DrawOutlinedText(mem, 170, 280, std::to_wstring(tempapple).c_str());
-			
-
             BitBlt(hdc, 0, 0, 1500, 900, mem, 0, 0, SRCCOPY);
             SelectObject(mem, oldBmp);
             DeleteObject(bmp);
-			SelectObject(uiDC, oldUIBitmap);
-			DeleteObject(gameui);
-			DeleteDC(uiDC);
+			
+		
             DeleteDC(mem);
             EndPaint(hWnd, &ps);
-        }
+        
         return 0;
     }
     case WM_DESTROY:
