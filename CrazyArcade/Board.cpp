@@ -1,5 +1,5 @@
 #include "Board.h"
-
+#include"ResourceManager.h"
 void init_board(Board board[MAP_TILES][MAP_TILES]) {
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES/2;
@@ -45,6 +45,8 @@ void init_board(Board board[MAP_TILES][MAP_TILES]) {
         }
     }
 }
+
+
 void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES]) {
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES / 2;
@@ -56,19 +58,19 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES]) {
   
     HDC tileDC= CreateCompatibleDC(hdc);
     HBITMAP tilebit[6];
-    tilebit[0] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_1));
-    tilebit[1] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_2));
-    tilebit[2] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_3));
-    tilebit[3] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_4));
-    tilebit[4] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_5));
-    tilebit[5] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_6));
+    tilebit[0] = ResourceManager::GetBitmap(BitmapID::ForestTile1);
+    tilebit[1] = ResourceManager::GetBitmap(BitmapID::ForestTile2);
+    tilebit[2] = ResourceManager::GetBitmap(BitmapID::ForestTile3);
+    tilebit[3] = ResourceManager::GetBitmap(BitmapID::ForestTile4);
+    tilebit[4] = ResourceManager::GetBitmap(BitmapID::ForestTile5);
+    tilebit[5] = ResourceManager::GetBitmap(BitmapID::ForestTile6);
     HBITMAP  oldTile = (HBITMAP)SelectObject(tileDC, tilebit[0]);
     HBITMAP obstacleBitmap[5];
-    obstacleBitmap[0] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_1));
-    obstacleBitmap[1] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_2));
-    obstacleBitmap[2] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_3));
-    obstacleBitmap[3] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_4));
-    obstacleBitmap[4] = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_5));
+    obstacleBitmap[0] = ResourceManager::GetBitmap(BitmapID::ForestObstacle1);
+    obstacleBitmap[1] = ResourceManager::GetBitmap(BitmapID::ForestObstacle2);
+    obstacleBitmap[2] = ResourceManager::GetBitmap(BitmapID::ForestObstacle3);
+    obstacleBitmap[3] = ResourceManager::GetBitmap(BitmapID::ForestObstacle4);
+    obstacleBitmap[4] = ResourceManager::GetBitmap(BitmapID::ForestObstacle5);
     HDC obstacleDC = CreateCompatibleDC(hdc);
     HBITMAP oldObstacleBitmap = (HBITMAP)SelectObject(obstacleDC, obstacleBitmap[0]);
 
@@ -128,15 +130,9 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES]) {
     HBITMAP oldTreeBitmap = (HBITMAP)SelectObject(treeDC, treebit);
     TransparentBlt(hdc, board[1][8].pos.x-10, board[1][9].pos.y - 3*MAP_TILES, 7*MAP_TILES, 6 * MAP_TILES, treeDC, 0, 0, 100, 80, RGB(255, 0, 255));
     SelectObject(treeDC, oldTreeBitmap);
-    DeleteObject(treebit);
+
     DeleteDC(treeDC);
-    for (int i = 0;i < 6;++i) {
-		DeleteObject(tilebit[i]);
-    }
    
-    for (int k = 0;k < 5;++k) {
-        DeleteObject(obstacleBitmap[k]);
-    }
     DeleteDC(obstacleDC);
     SelectObject(hdc, oldPen);
     DeleteObject(pen);

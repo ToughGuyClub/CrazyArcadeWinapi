@@ -1,7 +1,7 @@
 ﻿#include"pch.h"
 
 #include"Bomb.h"
-
+#include"ResourceManager.h"
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"Window Class Name";
 LPCTSTR lpszWindowName = L"2025 Window Programming Exam";
@@ -48,11 +48,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     HWND hWnd;
     MSG Message;
     WNDCLASSEX WndClass;
+  
 
-
-
+   
 
     g_hInst = hInstance;
+    ResourceManager::LoadAll(g_hInst);
+  
     WndClass.cbSize = sizeof(WndClass);
     WndClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     WndClass.lpfnWndProc = (WNDPROC)WndProc;
@@ -76,11 +78,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         TranslateMessage(&Message);
         DispatchMessage(&Message);
     }
+    ResourceManager::UnloadAll();
     return Message.wParam;
-
+  
 
 }
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+    
     PAINTSTRUCT ps;
     HDC hdc;
     static Player p1, p2;
@@ -91,7 +96,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	static bool game_started = false;
     switch (msg) {
     case WM_CREATE:
-      
+       
         break;
     case WM_KEYDOWN:
         if (wParam < 256) keyStates[wParam] = true;
@@ -228,8 +233,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
                     //임시로 플레이어 사과 출력
                     int tempapple = p1.GetCurrentApple();
+                    int tempapple2 = p2.GetCurrentApple();
+                    DrawOutlinedText(mem, 125, 220, L" : ");
+                    DrawOutlinedText(mem, 1280, 220, L" : ");
+                    DrawOutlinedText(mem, 215, 220, std::to_wstring(tempapple).c_str());
+                    DrawOutlinedText(mem, 1370, 220, std::to_wstring(tempapple2).c_str());
+                    DrawOutlinedText(mem, 125, 270, L" : ");
+                    DrawOutlinedText(mem, 1280, 270, L" : ");
+                    DrawOutlinedText(mem, 215, 270, std::to_wstring(tempapple).c_str());
+                    DrawOutlinedText(mem, 1370, 270, std::to_wstring(tempapple2).c_str());
 
-                    DrawOutlinedText(mem, 170, 280, std::to_wstring(tempapple).c_str());
+                   
 
                     SelectObject(uiDC, oldUIBitmap);
                     DeleteObject(gameui);
@@ -251,6 +265,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
     case WM_DESTROY:
         KillTimer(hWnd, TIMER_ID);
+       
         PostQuitMessage(0);
         return 0;
     }
