@@ -28,6 +28,8 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
 	bitmapMap[BitmapID::Player1Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
     bitmapMap[BitmapID::Player2Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
 	bitmapMap[BitmapID::PlayerMovingMask] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER_MASK));
+	bitmapMap[BitmapID::ForestApple] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_Forest_APPLE));
+	bitmapMap[BitmapID::ForestAppleBox] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_APPLEBOX));
 
 
     // 여기에 추가 비트맵도 계속 등록

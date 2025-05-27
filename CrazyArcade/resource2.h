@@ -31,12 +31,14 @@
 #define IDB_BITMAP_PLAYER_MASK          144
 #define IDB_BITMAP_P2_CHECK             145
 #define IDB_BITMAP_P1_CHECK             146
+#define IDB_BITMAP_Forest_APPLE         147
+#define IDB_BITMAP_FOREST_APPLEBOX      148
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101

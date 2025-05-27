@@ -28,6 +28,8 @@ public:
 
     void Draw_Player(HDC hdc, Player* p, int character);
 
+    void on_applebox(Player* player, int* applebox, int boxX, int boxY);
+
 public:
     // Getter
     int GetX() const { return x; }

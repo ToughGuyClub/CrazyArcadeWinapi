@@ -101,6 +101,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	static bool game_started = false;
     static int p1_check_color_pos;
 	static int p2_check_color_pos;
+    static int p1Applebox = 0;
+    static int p2Applebox = 0;
     switch (msg) {
     case WM_CREATE:
         p1_check_color_pos = 270;
@@ -144,6 +146,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 }
             }
         }
+        if (selected_stage == 1) {
+            p1.on_applebox(&p1, &p1Applebox, 8, 19);
+            p2.on_applebox(&p2, &p2Applebox, 11, 19);
+			if (p1Applebox >= 10) {
+				//p1승리 이제 win메시지 띄우고 전부 초기화
+			}
+            else if (p2Applebox >= 10) {
+                //p2승리 이제 win메시지 띄우고 전부 초기화
+            }
+        }
         InvalidateRect(hWnd, NULL, FALSE);
         break;
     case WM_KEYUP:
@@ -166,6 +178,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         case 2:
             for (int i = 0;i < p1bombs.size();++i) {
+				if (!p1bombs.data()[i].GetIsCollisionPlayer()&&p1bombs.data()[i].GetState() == 2) {
+                    if (p1bombs.data()[i].collision_bomb_player(p1bombs.data()[i], p2)) {
+                        if (selected_stage == 1) {
+                            if (p2.GetCurrentApple() > 0)
+                                p2.SetCurrentApple(p2.GetCurrentApple() - 1);
+                            p1bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 2와 충돌한 경우
+                        }
+                    }
+				}
+            }
+            for (int i = 0;i < p2bombs.size();++i) {
+                if (!p2bombs.data()[i].GetIsCollisionPlayer() && p2bombs.data()[i].GetState() == 2) {
+                    if (p2bombs.data()[i].collision_bomb_player(p2bombs.data()[i], p1)) {
+                        if (selected_stage == 1) {
+                            if (p1.GetCurrentApple() > 0)
+                                p1.SetCurrentApple(p1.GetCurrentApple() - 1);
+                            p2bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 1과 충돌한 경우
+                        }
+                    }
+                }
+            }
+            for (int i = 0;i < p1bombs.size();++i) {
                 if (p1bombs.data()[i].tick_Bomb()) {
                     p1bombs.erase(p1bombs.begin() + i);
                 }
@@ -175,7 +209,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     p2bombs.erase(p2bombs.begin() + i);
                 }
             }
-			
+          
             break;
             }
    
@@ -212,6 +246,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 p2.Init_Player(p2_start_point);
                 p2.SetPlayerNum(2);
                 init_board(board);
+               
                 SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
                 SetTimer(hWnd, 2, 50, NULL);
               
@@ -306,6 +341,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     //p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
                     //p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
 
+
+
+                    HBITMAP appleboxBitmap = ResourceManager::GetBitmap(BitmapID::ForestAppleBox);
+                    HDC appleboxDC = CreateCompatibleDC(hdc);
+                    HBITMAP oldAppleboxBitmap = (HBITMAP)SelectObject(appleboxDC, appleboxBitmap);
+					TransparentBlt(mem, 50,260,64,64, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
+                    TransparentBlt(mem, 1200, 260, 64, 64, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
+
+					HBITMAP applexBitmap = ResourceManager::GetBitmap(BitmapID::ForestApple);
+					HDC applexDC = CreateCompatibleDC(hdc);
+					HBITMAP oldApplexBitmap = (HBITMAP)SelectObject(applexDC, applexBitmap);
+                    TransparentBlt(mem, 50, 220, 64, 64, applexDC, 0, 0, 40, 40, RGB(255, 0, 255));
+                    TransparentBlt(mem, 1200, 220, 64, 64, applexDC, 0, 0, 40, 40, RGB(255, 0, 255));
                     //임시로 플레이어 사과 출력
                     int tempapple = p1.GetCurrentApple();
                     int tempapple2 = p2.GetCurrentApple();
@@ -315,11 +363,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     DrawOutlinedText(mem, 1370, 220, std::to_wstring(tempapple2).c_str());
                     DrawOutlinedText(mem, 125, 270, L" : ");
                     DrawOutlinedText(mem, 1280, 270, L" : ");
-                    DrawOutlinedText(mem, 215, 270, std::to_wstring(tempapple).c_str());
-                    DrawOutlinedText(mem, 1370, 270, std::to_wstring(tempapple2).c_str());
+                    DrawOutlinedText(mem, 215, 270, std::to_wstring(p1Applebox).c_str());
+                    DrawOutlinedText(mem, 1370, 270, std::to_wstring(p2Applebox).c_str());
 
                    
-					
+					SelectObject(appleboxDC, oldAppleboxBitmap);
+					SelectObject(applexDC, oldApplexBitmap);
                     SelectObject(uiDC, oldUIBitmap);
                     DeleteObject(gameui);
                     DeleteDC(uiDC);

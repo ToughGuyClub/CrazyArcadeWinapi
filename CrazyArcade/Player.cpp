@@ -90,6 +90,22 @@ void Player::Draw_Player(HDC hdc, Player* p, int character)
     SelectObject(memDC, oldBitmapmask);
     DeleteDC(memDC);
 }
+void Player::on_applebox(Player* player, int* applebox, int boxX, int boxY)
+{
+    int px = player->GetX();
+    int py = player->GetY();
+
+    if ((px == boxX && py == boxY - 1) ||  // 위쪽
+        (px == boxX - 1 && py == boxY) ||  // 왼쪽
+        (px == boxX + 1 && py == boxY))    // 오른쪽
+    {
+        if (player->GetCurrentApple() > 0) {
+            player->SetCurrentApple(player->GetCurrentApple()-1);  // 사과 하나 빼고
+            (*applebox)++;                // 박스 수 증가
+        }
+    }
+}
+
 
 void HandlePlayerMovement(Player& player, const bool* keyStates, int upKey, int downKey, int leftKey, int rightKey, Board board[MAP_TILES][MAP_TILES]) {
     if (player.IsStopped()) {
@@ -194,20 +210,22 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
                 oldTile = (HBITMAP)SelectObject(tileDC, tilebit[5]);
                 StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
             }
+            if (j == 11 && i == 2) {
+                HBITMAP treebit = ResourceManager::GetBitmap(BitmapID::ForestTree);
+                HDC treeDC = CreateCompatibleDC(hdc);
+                HBITMAP oldTreeBitmap = (HBITMAP)SelectObject(treeDC, treebit);
+                TransparentBlt(hdc, board[1][8].pos.x - 10, board[1][9].pos.y - 3 * MAP_TILES, 7 * MAP_TILES, 6 * MAP_TILES, treeDC, 0, 0, 100, 80, RGB(255, 0, 255));
+                SelectObject(treeDC, oldTreeBitmap);
+
+                DeleteDC(treeDC);
+            }
 			if (j == p1->GetX()) {
 				p1->Draw_Player(hdc, p1, p1->GetSelectedCharacter());
 			}
 			if (j == p2->GetX()) {
 				p2->Draw_Player(hdc, p2, p2->GetSelectedCharacter());
 			}
-            switch (board[i][j].obstacle) {
-            case 3:  // 갈색 (바구니)
-                color = RGB(139, 69, 19); // 나무색
-                break;
-            default:
-                color = RGB(255, 255, 255);
-                break; // 0번 장애물은 그리지 않음
-            }
+          
 
 
 
@@ -217,19 +235,27 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
                 TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES - 5, board[i][j].pos.y - MAP_TILES - 5, 2 * MAP_TILES + 10, 2 * MAP_TILES + 10, obstacleDC, 0, 0, 68, 67, RGB(255, 0, 255));
                 SelectObject(obstacleDC, oldObstacleBitmap);
             }
-
+            switch (board[i][j].obstacle) {
+            case 3:  // 갈색 (바구니)
+            {
+                HBITMAP appleboxBitmap = ResourceManager::GetBitmap(BitmapID::ForestAppleBox);
+                HDC appleboxDC = CreateCompatibleDC(hdc);
+                HBITMAP oldAppleboxBitmap = (HBITMAP)SelectObject(appleboxDC, appleboxBitmap);
+                TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES - 10, board[i][j].pos.y - MAP_TILES - 30, 2 * MAP_TILES + 20, 2 * MAP_TILES + 30, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
+                SelectObject(appleboxDC, oldAppleboxBitmap);
+                DeleteDC(appleboxDC);
+            }
+            break;
+            default:
+                color = RGB(255, 255, 255);
+                break; // 0번 장애물은 그리지 않음
+            }
 
 
         }
 
     }
-    HBITMAP treebit = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_BIG_TREE));
-    HDC treeDC = CreateCompatibleDC(hdc);
-    HBITMAP oldTreeBitmap = (HBITMAP)SelectObject(treeDC, treebit);
-    TransparentBlt(hdc, board[1][8].pos.x - 10, board[1][9].pos.y - 3 * MAP_TILES, 7 * MAP_TILES, 6 * MAP_TILES, treeDC, 0, 0, 100, 80, RGB(255, 0, 255));
-    SelectObject(treeDC, oldTreeBitmap);
-
-    DeleteDC(treeDC);
+ 
 
     DeleteDC(obstacleDC);
     SelectObject(hdc, oldPen);

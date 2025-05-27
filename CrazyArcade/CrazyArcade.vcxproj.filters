@@ -240,5 +240,11 @@
     <Image Include="Resource\game_start\P2_Check.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="Resource\forest_tile\Forest_Apple.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\forest_tile\forest_obstacle\AppleBox.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

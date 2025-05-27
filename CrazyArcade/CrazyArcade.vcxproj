@@ -188,6 +188,8 @@
     <Image Include="resource\bitmap1.bmp" />
     <Image Include="Resource\down1.bmp" />
     <Image Include="Resource\down2.bmp" />
+    <Image Include="Resource\forest_tile\Forest_Apple.bmp" />
+    <Image Include="Resource\forest_tile\forest_obstacle\AppleBox.bmp" />
     <Image Include="Resource\forest_tile\forest_obstacle\block_1.bmp" />
     <Image Include="Resource\forest_tile\forest_obstacle\block_2.bmp" />
     <Image Include="Resource\forest_tile\forest_obstacle\block_3.bmp" />

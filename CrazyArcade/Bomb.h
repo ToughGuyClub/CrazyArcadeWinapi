@@ -17,9 +17,13 @@ class Bomb {
 	bool isCollisionRight;
 	bool isCollisionUp;
 	bool isCollisionDown;
+
+	bool is_collision_player;
 public:
 	void make_Bomb(Player player,Board board[MAP_TILES][MAP_TILES]);
 	bool tick_Bomb();
+	int collision_bomb_player(Bomb bomb, Player player);
+
 	int GetX() const { return pos.x; }
 	int GetY() const { return pos.y; }
 	int GetTime() const { return time; }
@@ -35,6 +39,7 @@ public:
 	bool GetIsCollisionRight() const { return isCollisionRight; }
 	bool GetIsCollisionUp() const { return isCollisionUp; }
 	bool GetIsCollisionDown() const { return isCollisionDown; }
+	bool GetIsCollisionPlayer() const { return is_collision_player; }
 
 	void SetReachLeft(int value) { reachLeft = value; }
 	void SetReachRight(int value) { reachRight = value; }
@@ -44,7 +49,7 @@ public:
 	void SetIsCollisionRight(bool value) { isCollisionRight = value; }
 	void SetIsCollisionUp(bool value) { isCollisionUp = value; }
 	void SetIsCollisionDown(bool value) { isCollisionDown = value; }
-
+	void SetIsCollisionPlayer(bool value) { is_collision_player = value; }
 
 	
 };

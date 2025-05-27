@@ -15,6 +15,7 @@ void Bomb::make_Bomb(Player player, Board board[MAP_TILES][MAP_TILES])
     this->isCollisionRight = false;
     this->isCollisionUp = false;
     this->isCollisionDown = false;
+    this->is_collision_player = false;
 }
 
 bool Bomb::tick_Bomb()
@@ -23,6 +24,7 @@ bool Bomb::tick_Bomb()
 	else if (this->time <= 0&&this->state==1) {
 		this->state = 2;
 		this->time = 20;
+      
 	}
 	else if (this->time <= 0 && this->state == 2) {
 	this->state = 0;
@@ -30,6 +32,32 @@ bool Bomb::tick_Bomb()
 	}
 	return false;
 }
+
+int Bomb::collision_bomb_player(Bomb bomb, Player player)
+{
+    int bx = bomb.GetLogicalX();
+    int by = bomb.GetLogicalY();
+    int px = player.GetY();
+    int py = player.GetX();
+
+    // 폭탄 중심에 있는 경우
+    if (bx == px && by == py) {
+        return 1;
+    }
+
+    // 수평 방향 사거리 판정 (같은 Y축, X범위 내)
+    if (by == py && px >= bx - bomb.GetReachLeft() && px <= bx + bomb.GetReachRight()) {
+        return 1;
+    }
+
+    // 수직 방향 사거리 판정 (같은 X축, Y범위 내)
+    if (bx == px && py >= by - bomb.GetReachUp() && py <= by + bomb.GetReachDown()) {
+        return 1;
+    }
+
+    return 0; // 충돌 없음
+}
+
 
 void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TILES][MAP_TILES],Player *player)
 {

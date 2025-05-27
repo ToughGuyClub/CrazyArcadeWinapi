@@ -24,6 +24,8 @@ enum class BitmapID {
     ForestObstacle4,
     ForestObstacle5,
     ForestTree,
+	ForestApple,
+	ForestAppleBox,
     //플레이어
     Player1Moving,
     Player2Moving,
