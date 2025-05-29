@@ -20,6 +20,8 @@ void Player::Init_Player(POINT pos)
     this->destX = pos.x;
     this->destY = pos.y;
 
+
+    this->speed = 1.0f;
     // 실수형 좌표(px, py)도 현재 좌표로 초기화
     this->px = static_cast<float>(pos.x);
     this->py = static_cast<float>(pos.y);
@@ -100,10 +102,31 @@ void Player::on_applebox(Player* player, int* applebox, int boxX, int boxY)
         (px == boxX + 1 && py == boxY))    // 오른쪽
     {
         if (player->GetCurrentApple() > 0) {
-            player->SetCurrentApple(player->GetCurrentApple()-1);  // 사과 하나 빼고
-            (*applebox)++;                // 박스 수 증가
+        
+            (*applebox) = player->GetCurrentApple();;                // 박스 수 증가
+            player->SetCurrentApple(0);
         }
     }
+}
+
+void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES])
+{
+	int px = player->GetX();
+	int py = player->GetY();
+	// 플레이어가 아이템을 먹었는지 확인
+	if (board[py][px].item == 1) { // 물풍선 사거리 증가
+		player->SetBomb_distance(player->GetBomb_distance() + 1);
+		board[py][px].item = 0; // 아이템 사용 후 제거
+	}
+	else if (board[py][px].item == 2) { // 물풍선 개수 증가
+		player->SetMaxBomb(player->GetMaxBomb() + 1);
+		board[py][px].item = 0; // 아이템 사용 후 제거
+	}
+	else if (board[py][px].item == 3) { // 이동 속도 증가
+		if (player->Getspeed() < 1.5f) // 최대 속도 제한
+		player->SetSpeed(player->Getspeed() + 0.1f);
+		board[py][px].item = 0; // 아이템 사용 후 제거
+	}
 }
 
 
@@ -183,6 +206,13 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
     HDC obstacleDC = CreateCompatibleDC(hdc);
     HBITMAP oldObstacleBitmap = (HBITMAP)SelectObject(obstacleDC, obstacleBitmap[0]);
 
+    HBITMAP itemBitmap[3];
+    itemBitmap[0] = ResourceManager::GetBitmap(BitmapID::ItemPower);
+	itemBitmap[1] = ResourceManager::GetBitmap(BitmapID::ItemBombCount);
+	itemBitmap[2] = ResourceManager::GetBitmap(BitmapID::ItemSpeed);
+	HDC itemDC = CreateCompatibleDC(hdc);
+	HBITMAP oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[0]);
+
     for (int i = 0; i < MAP_TILES; ++i) {
         for (int j = 0; j < MAP_TILES; ++j) {
             COLORREF color;
@@ -218,6 +248,11 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
                 SelectObject(treeDC, oldTreeBitmap);
 
                 DeleteDC(treeDC);
+            }
+            if (board[i][j].item >= 1&&board[i][j].obstacle==0) {
+                oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[board[i][j].item-1]);
+				TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES - 10, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 38, 38, RGB(255, 0, 255));
+				SelectObject(itemDC, oldItemBitmap);
             }
 			if (j == p1->GetX()) {
 				p1->Draw_Player(hdc, p1, p1->GetSelectedCharacter());
@@ -256,7 +291,7 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
 
     }
  
-
+    DeleteDC(itemDC);
     DeleteDC(obstacleDC);
     SelectObject(hdc, oldPen);
     DeleteObject(pen);

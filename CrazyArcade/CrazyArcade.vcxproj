@@ -202,10 +202,15 @@
     <Image Include="Resource\forest_tile\tile_8.bmp" />
     <Image Include="Resource\forest_tile\tile_9.bmp" />
     <Image Include="Resource\game_start\Back_Login.bmp" />
+    <Image Include="Resource\game_start\game_end.bmp" />
+    <Image Include="Resource\game_start\game_end.png" />
     <Image Include="Resource\game_start\P1_Check.bmp" />
     <Image Include="Resource\game_start\P2_Check.bmp" />
     <Image Include="Resource\game_start\Select_Stage.bmp" />
     <Image Include="Resource\Game_UI.bmp" />
+    <Image Include="Resource\item\Power.bmp" />
+    <Image Include="Resource\item\Roller.bmp" />
+    <Image Include="Resource\item\Water.bmp" />
     <Image Include="Resource\left1.bmp" />
     <Image Include="Resource\left2.bmp" />
     <Image Include="Resource\namu_map1.bmp" />

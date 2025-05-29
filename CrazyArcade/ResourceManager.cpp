@@ -3,8 +3,8 @@
 
 std::map<BitmapID, HBITMAP> ResourceManager::bitmapMap;
 
+
 void ResourceManager::LoadAll(HINSTANCE hInst) {
-    //폭탄
     bitmapMap[BitmapID::BombSet] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_BOMB_CENTER));
     bitmapMap[BitmapID::BombCenter] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_BOMB_POP));
     bitmapMap[BitmapID::BombPop] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_BOMB_POP));
@@ -25,26 +25,30 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
     bitmapMap[BitmapID::ForestObstacle4] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_4));
     bitmapMap[BitmapID::ForestObstacle5] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_5));
     bitmapMap[BitmapID::ForestTree] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_BIG_TREE));
-	bitmapMap[BitmapID::Player1Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
+    bitmapMap[BitmapID::Player1Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
     bitmapMap[BitmapID::Player2Moving] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER));
-	bitmapMap[BitmapID::PlayerMovingMask] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER_MASK));
-	bitmapMap[BitmapID::ForestApple] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_Forest_APPLE));
-	bitmapMap[BitmapID::ForestAppleBox] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_APPLEBOX));
-
-
+    bitmapMap[BitmapID::PlayerMovingMask] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER_MASK));
+    bitmapMap[BitmapID::ForestApple] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_Forest_APPLE));
+    bitmapMap[BitmapID::ForestAppleBox] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_APPLEBOX));
+    bitmapMap[BitmapID::Game_end] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_END));
+    bitmapMap[BitmapID::ItemPower] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_POWER));
+    bitmapMap[BitmapID::ItemBombCount] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_BOMBS));
+    bitmapMap[BitmapID::ItemSpeed] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_SPEED));
     // 여기에 추가 비트맵도 계속 등록
+
 }
 
 void ResourceManager::UnloadAll() {
-    for (auto& pair : bitmapMap) {
+    for (auto& pair : bitmapMap)
         DeleteObject(pair.second);
-    }
     bitmapMap.clear();
-}
 
+   
+}
 HBITMAP ResourceManager::GetBitmap(BitmapID id) {
     return bitmapMap[id];
 }
+
 void ResourceManager::SetBitmap(BitmapID id, HBITMAP hBitmap) {
     // 기존 비트맵 있으면 삭제
     if (bitmapMap[id]) {
@@ -52,3 +56,4 @@ void ResourceManager::SetBitmap(BitmapID id, HBITMAP hBitmap) {
     }
     bitmapMap[id] = hBitmap;
 }
+

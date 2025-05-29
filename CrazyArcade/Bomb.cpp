@@ -61,24 +61,30 @@ int Bomb::collision_bomb_player(Bomb bomb, Player player)
 
 void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TILES][MAP_TILES],Player *player)
 {
-    HBRUSH hbrush = CreateSolidBrush(RGB(0, 0, 255));
-    HBRUSH oldbrush = (HBRUSH)SelectObject(hDC, hbrush);
-    HBITMAP hbitmap;
+  
+    HBITMAP hbitmapState1 = ResourceManager::GetBitmap(BitmapID::BombSet);
+    HBITMAP hbitmapcenter= ResourceManager::GetBitmap(BitmapID::BombCenter);;
+    HBITMAP hbitmapleft= ResourceManager::GetBitmap(BitmapID::BombLeft2);
+	HBITMAP hbitmapright= ResourceManager::GetBitmap(BitmapID::BombRight2);
+	HBITMAP hbitmapup = ResourceManager::GetBitmap(BitmapID::BombUp2);;
+	HBITMAP hbitmapdown = ResourceManager::GetBitmap(BitmapID::BombDown2);
+    HDC memDC = CreateCompatibleDC(hDC);
 
     for (int i = 0; i < n; ++i) {
         int x = bombs[i].GetX();
         int y = bombs[i].GetY();
         int reach = bombs[i].GetReach();
-
+        int logicX = bombs[i].GetLogicalY();
+        int logicY = bombs[i].GetLogicalX();
         // 설치 상태
         if (bombs[i].GetState() == 1) {
             
                 if (bombs[i].GetState() != 1) continue;  // 설치 상태만
                
-                hbitmap= ResourceManager::GetBitmap(BitmapID::BombSet);
+                
                
-                HDC memDC = CreateCompatibleDC(hDC);
-                HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hbitmap);
+               
+                HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapState1);
 
                 int x = bombs[i].GetX();
                 int y = bombs[i].GetY();
@@ -101,13 +107,11 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
             int cy = y / (MAP_TILES * 2);
 
             // 본체
-            hbitmap = ResourceManager::GetBitmap(BitmapID::BombCenter);
+          
+            HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapcenter);
 
-            HDC memDC = CreateCompatibleDC(hDC);
-            HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, hbitmap);
-
-            int x = bombs[i].GetX();
-            int y = bombs[i].GetY();
+           // int x = bombs[i].GetX();
+           // int y = bombs[i].GetY();
             int currentFrame = bombs[i].GetTime() % 3;
             int drawSize = MAP_TILES * 2;
             TransparentBlt(
@@ -121,12 +125,11 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
             //좌
             bool is_collision = false;
             for (int j = 0;j < bombs[i].GetReachLeft();++j) {
-                int logicX = bombs[i].GetLogicalY();
-                int logicY = bombs[i].GetLogicalX();
+               
                 
 
-                hbitmap = ResourceManager::GetBitmap(BitmapID::BombLeft2);
-                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmap);
+              
+                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapleft);
                 int nx = logicX - j - 1;
                 if (nx < 0) break;  // 바깥으로 나가지 않도록!
 
@@ -166,12 +169,11 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
             //우
             is_collision = false;
             for (int j = 0;j < bombs[i].GetReachRight();++j) {
-                int logicX = bombs[i].GetLogicalY();
-                int logicY = bombs[i].GetLogicalX();
+              //  int logicX = bombs[i].GetLogicalY();
+              //  int logicY = bombs[i].GetLogicalX();
 
-                hbitmap = ResourceManager::GetBitmap(BitmapID::BombRight2);
-               // hbitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_BOMB_RIGHT2));
-                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmap);
+              
+                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapright);
                 int nx = logicX + j + 1;
                 if (nx >= MAP_TILES) break;  // 바깥으로 나가지 않도록!
 
@@ -207,12 +209,11 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
             //상
             is_collision = false;
             for (int j = 0;j < bombs[i].GetReachUp();++j) {
-                int logicX = bombs[i].GetLogicalY();
-                int logicY = bombs[i].GetLogicalX();
+               // int logicX = bombs[i].GetLogicalY();
+              //  int logicY = bombs[i].GetLogicalX();
               
-                hbitmap = ResourceManager::GetBitmap(BitmapID::BombUp2);
-               // hbitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_BOMB_UP2));
-                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmap);
+         
+                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapup);
                 int ny = logicY - j - 1;
                 if (ny <0) break;  // 바깥으로 나가지 않도록!
 
@@ -248,11 +249,11 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
             //하
             is_collision = false;
             for (int j = 0;j < bombs[i].GetReachDown();++j) {
-                int logicX = bombs[i].GetLogicalY();
-                int logicY = bombs[i].GetLogicalX();
-                hbitmap = ResourceManager::GetBitmap(BitmapID::BombDown2);
+             //   int logicX = bombs[i].GetLogicalY();
+              //  int logicY = bombs[i].GetLogicalX();
+    
                // hbitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_BOMB_DOWN2));
-                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmap);
+                oldBitmap = (HBITMAP)SelectObject(memDC, hbitmapdown);
                     int ny = logicY + j+1;
                     if (ny >= MAP_TILES) break;  // 바깥으로 나가지 않도록!
 
@@ -290,12 +291,11 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
           
             SelectObject(memDC, oldBitmap);
            
-            DeleteDC(memDC);
+          
             
            
         }
     }
-
-    SelectObject(hDC, oldbrush);
-    DeleteObject(hbrush);
+    DeleteDC(memDC);
+    
 }

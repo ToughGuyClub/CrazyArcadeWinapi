@@ -246,5 +246,20 @@
     <Image Include="Resource\forest_tile\forest_obstacle\AppleBox.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="Resource\game_start\game_end.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\game_start\game_end.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\item\Power.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\item\Roller.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\item\Water.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

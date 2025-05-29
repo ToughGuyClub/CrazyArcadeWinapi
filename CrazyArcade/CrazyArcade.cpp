@@ -43,6 +43,9 @@ void DrawOutlinedText(HDC hdc, int x, int y, const wchar_t* text) {
     DeleteObject(hFont);
 }
 
+static int frameCount = 0;
+static DWORD lastTime = GetTickCount();  // 시작 시간(ms)
+static int currentFPS = 0;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpszCmdParam, _In_ int nCmdShow) {
     HWND hWnd;
@@ -99,6 +102,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static std::vector<Bomb> p1bombs;
     static std::vector<Bomb> p2bombs;
 	static bool game_started = false;
+    static bool game_end = false;
+    static int game_winner = 0; 
     static int p1_check_color_pos;
 	static int p2_check_color_pos;
     static int p1Applebox = 0;
@@ -151,11 +156,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             p2.on_applebox(&p2, &p2Applebox, 11, 19);
 			if (p1Applebox >= 10) {
 				//p1승리 이제 win메시지 띄우고 전부 초기화
+                game_end = true;
+                game_winner = 1;
 			}
             else if (p2Applebox >= 10) {
                 //p2승리 이제 win메시지 띄우고 전부 초기화
+                game_end = true;
+				game_winner = 2;
             }
         }
+	
         InvalidateRect(hWnd, NULL, FALSE);
         break;
     case WM_KEYUP:
@@ -164,24 +174,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_TIMER: {
         switch (wParam) {
         case 1: {
-            float speed = 1.0f / 8.0f;
+          
             if (selected_stage) {
                 HandlePlayerMovement(p1, keyStates, 'W', 'S', 'A', 'D', board);
-                UpdatePlayerPosition(p1, speed);
+                UpdatePlayerPosition(p1, p1.Getspeed()/8.0f);
 
                 HandlePlayerMovement(p2, keyStates, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, board);
-                UpdatePlayerPosition(p2, speed);
+                UpdatePlayerPosition(p2, p2.Getspeed()/8.0f);
 
+                p1.collision_item(&p1, board);
+                p2.collision_item(&p2, board);
+            }
+            frameCount++;
 
+            DWORD currentTime = GetTickCount();
+            if (currentTime - lastTime >= 1000) { // 1초 지남
+                currentFPS = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
             }
         }
             break;
         case 2:
+            
             for (int i = 0;i < p1bombs.size();++i) {
 				if (!p1bombs.data()[i].GetIsCollisionPlayer()&&p1bombs.data()[i].GetState() == 2) {
                     if (p1bombs.data()[i].collision_bomb_player(p1bombs.data()[i], p2)) {
                         if (selected_stage == 1) {
                             if (p2.GetCurrentApple() > 0)
+								p1.SetCurrentApple(p1.GetCurrentApple() + 1);
                                 p2.SetCurrentApple(p2.GetCurrentApple() - 1);
                             p1bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 2와 충돌한 경우
                         }
@@ -193,6 +214,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     if (p2bombs.data()[i].collision_bomb_player(p2bombs.data()[i], p1)) {
                         if (selected_stage == 1) {
                             if (p1.GetCurrentApple() > 0)
+                                p2.SetCurrentApple(p2.GetCurrentApple() + 1);
                                 p1.SetCurrentApple(p1.GetCurrentApple() - 1);
                             p2bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 1과 충돌한 경우
                         }
@@ -220,7 +242,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		int pos_x = LOWORD(lParam);
         if(!game_started&&pos_x<800)
 		game_started = true;
-        
+        else if (!game_started &&pos_x > 800) {
+            PostQuitMessage(0);
+        }
         InvalidateRect(hWnd, NULL, FALSE);
         break;
     }
@@ -276,11 +300,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     p1.SetColor(p1.GetColor() + 1);
                 }
             }
+                
             }
         }
         if (selected_stage) {
 			
-          
+            if (wParam == 'r' && game_end) {
+            //게임 리셋
+            if (selected_stage == 1) {
+                p1.Init_Player({ 8, 18 });
+                p1.Init_Player({ 11, 18 });
+                p1Applebox = 0;
+                p2Applebox = 0;
+            }
+            selected_stage = 0;
+            p1bombs;
+            p2bombs;
+            game_started = false;
+            game_end = false;
+            game_winner = 0;
+            p1_check_color_pos = 270;
+            p2_check_color_pos = 270;
+            p1Applebox = 0;
+            p2Applebox = 0;
+        }
         }
         break;
     case WM_PAINT: {
@@ -323,8 +366,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     TransparentBlt(mem, p2_check_color_pos, 640, 100, 50, p2CheckDC, 0, 0, 224, 150, RGB(255, 0, 255));
 
 					DeleteDC(selectStageDC);
+                    DeleteObject(p1CheckBitmap);
+					DeleteObject(p2CheckBitmap);
+
+					DeleteDC(p1CheckDC);
+					DeleteDC(p2CheckDC);
                 }
-				else if (selected_stage == 1) {
+				else if (selected_stage >= 1) {
                     HBITMAP gameui = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAMEUI));
                     HDC uiDC = CreateCompatibleDC(mem);
                     HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
@@ -333,54 +381,88 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     DrawGrid(mem, g_hInst, board,&p1,&p2);
 
 
+                    if (selected_stage == 1) {
+
+                        draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
+                        draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
+
+                        //p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
+                        //p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
 
 
-                    draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
-                    draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
 
-                    //p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
-                    //p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
+                        HBITMAP appleboxBitmap = ResourceManager::GetBitmap(BitmapID::ForestAppleBox);
+                        HDC appleboxDC = CreateCompatibleDC(hdc);
+                        HBITMAP oldAppleboxBitmap = (HBITMAP)SelectObject(appleboxDC, appleboxBitmap);
+                        TransparentBlt(mem, 50, 260, 64, 64, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
+                        TransparentBlt(mem, 1200, 260, 64, 64, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
+
+                        HBITMAP applexBitmap = ResourceManager::GetBitmap(BitmapID::ForestApple);
+                        HDC applexDC = CreateCompatibleDC(hdc);
+                        HBITMAP oldApplexBitmap = (HBITMAP)SelectObject(applexDC, applexBitmap);
+                        TransparentBlt(mem, 50, 220, 64, 64, applexDC, 0, 0, 40, 40, RGB(255, 0, 255));
+                        TransparentBlt(mem, 1200, 220, 64, 64, applexDC, 0, 0, 40, 40, RGB(255, 0, 255));
+                        //임시로 플레이어 사과 출력
+                        int tempapple = p1.GetCurrentApple();
+                        int tempapple2 = p2.GetCurrentApple();
+                        DrawOutlinedText(mem, 125, 220, L" : ");
+                        DrawOutlinedText(mem, 1280, 220, L" : ");
+                        DrawOutlinedText(mem, 215, 220, std::to_wstring(tempapple).c_str());
+                        DrawOutlinedText(mem, 1370, 220, std::to_wstring(tempapple2).c_str());
+                        DrawOutlinedText(mem, 125, 270, L" : ");
+                        DrawOutlinedText(mem, 1280, 270, L" : ");
+                        DrawOutlinedText(mem, 215, 270, std::to_wstring(p1Applebox).c_str());
+                        DrawOutlinedText(mem, 1370, 270, std::to_wstring(p2Applebox).c_str());
 
 
-
-                    HBITMAP appleboxBitmap = ResourceManager::GetBitmap(BitmapID::ForestAppleBox);
-                    HDC appleboxDC = CreateCompatibleDC(hdc);
-                    HBITMAP oldAppleboxBitmap = (HBITMAP)SelectObject(appleboxDC, appleboxBitmap);
-					TransparentBlt(mem, 50,260,64,64, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
-                    TransparentBlt(mem, 1200, 260, 64, 64, appleboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
-
-					HBITMAP applexBitmap = ResourceManager::GetBitmap(BitmapID::ForestApple);
-					HDC applexDC = CreateCompatibleDC(hdc);
-					HBITMAP oldApplexBitmap = (HBITMAP)SelectObject(applexDC, applexBitmap);
-                    TransparentBlt(mem, 50, 220, 64, 64, applexDC, 0, 0, 40, 40, RGB(255, 0, 255));
-                    TransparentBlt(mem, 1200, 220, 64, 64, applexDC, 0, 0, 40, 40, RGB(255, 0, 255));
-                    //임시로 플레이어 사과 출력
-                    int tempapple = p1.GetCurrentApple();
-                    int tempapple2 = p2.GetCurrentApple();
-                    DrawOutlinedText(mem, 125, 220, L" : ");
-                    DrawOutlinedText(mem, 1280, 220, L" : ");
-                    DrawOutlinedText(mem, 215, 220, std::to_wstring(tempapple).c_str());
-                    DrawOutlinedText(mem, 1370, 220, std::to_wstring(tempapple2).c_str());
-                    DrawOutlinedText(mem, 125, 270, L" : ");
-                    DrawOutlinedText(mem, 1280, 270, L" : ");
-                    DrawOutlinedText(mem, 215, 270, std::to_wstring(p1Applebox).c_str());
-                    DrawOutlinedText(mem, 1370, 270, std::to_wstring(p2Applebox).c_str());
-
-                   
-					SelectObject(appleboxDC, oldAppleboxBitmap);
-					SelectObject(applexDC, oldApplexBitmap);
-                    SelectObject(uiDC, oldUIBitmap);
-                    DeleteObject(gameui);
-                    DeleteDC(uiDC);
+                        SelectObject(appleboxDC, oldAppleboxBitmap);
+                        SelectObject(applexDC, oldApplexBitmap);
+                        SelectObject(uiDC, oldUIBitmap);
+                        DeleteObject(gameui);
+                        DeleteDC(uiDC);
+                        DeleteObject(appleboxBitmap);
+                        DeleteObject(applexBitmap);
+                        DeleteDC(appleboxDC);
+                        DeleteDC(applexDC);
+                    }
+					else if (selected_stage == 2) {
+						// 다른 스테이지 처리
+					}
+					else if (selected_stage == 3) {
+						// 다른 스테이지 처리
+					}
+                    //화면 프레임 출력
+                    std::wstring fpsText = L"FPS: " + std::to_wstring(currentFPS);
+                    DrawOutlinedText(mem, 10, 10, fpsText.c_str());  // 
 				}
             
             
             }
-			
+           
+            if (game_end) {
+                DrawDarkOverlay(mem, 1500, 900);
+                HBITMAP gameEndBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_END));
+                HDC gameEndDC = CreateCompatibleDC(mem);
+                HBITMAP oldGameEndBitmap = (HBITMAP)SelectObject(gameEndDC, gameEndBitmap);
+                if (game_winner == 1) {
+					TransparentBlt(mem, 1100, 400, 348, 65, gameEndDC, 0, 0, 348, 65, RGB(255, 0, 255));
+                    TransparentBlt(mem, 50, 400, 348, 65, gameEndDC, 0, 65, 348, 65, RGB(255, 0, 255));
+				}
+                else if (game_winner == 2) {
+                    // 플레이어 2 승리 처리
+                    TransparentBlt(mem, 50, 400, 348, 65, gameEndDC, 0, 0, 348, 65, RGB(255, 0, 255));
+                    TransparentBlt(mem, 1100, 400, 348, 65, gameEndDC, 0, 65, 348, 65, RGB(255, 0, 255));
+                }
+              
+                DrawOutlinedText(mem, 500, 600,L"다시 시작하려면 R을 누르시오 .");  // 
+                SelectObject(gameEndDC, oldGameEndBitmap);
+                DeleteObject(gameEndBitmap);
+                DeleteDC(gameEndDC);
+            }
             BitBlt(hdc, 0, 0, 1500, 900, mem, 0, 0, SRCCOPY);
             SelectObject(mem, oldBmp);
             DeleteObject(bmp);
-         
+            
             DeleteDC(mem);
             EndPaint(hWnd, &ps);
         

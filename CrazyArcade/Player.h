@@ -10,6 +10,7 @@ class Player {
     int x, y;
     int destX, destY;
     int dir;
+	float speed;
     float px, py;
     int bomb_distance;
     int maxBomb;
@@ -29,6 +30,7 @@ public:
     void Draw_Player(HDC hdc, Player* p, int character);
 
     void on_applebox(Player* player, int* applebox, int boxX, int boxY);
+    void collision_item(Player* player, Board board[MAP_TILES][MAP_TILES]);
 
 public:
     // Getter
@@ -36,6 +38,7 @@ public:
     int GetY() const { return y; }
     int GetDestX() const { return destX; }
     int GetDestY() const { return destY; }
+	float Getspeed() const { return speed; }    
     int GetDir() const { return dir; }
     float GetPx() const { return px; }
     float GetPy() const { return py; }
@@ -51,6 +54,7 @@ public:
     void SetY(int value) { y = value; }
     void SetDestX(int value) { destX = value; }
     void SetDestY(int value) { destY = value; }
+	void SetSpeed(float value) { speed = value; }
     void SetDir(int value) { dir = value; }
     void SetPx(float value) { px = value; }
     void SetPy(float value) { py = value; }
