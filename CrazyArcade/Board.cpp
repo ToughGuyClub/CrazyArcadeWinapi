@@ -1,7 +1,7 @@
 #include "Board.h"
 #include"ResourceManager.h"
 #include"Player.h"
-void init_board(Board board[MAP_TILES][MAP_TILES]) {
+void init_board_Forest(Board board[MAP_TILES][MAP_TILES]) {
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES/2;
     int ox = (WINDOW_WIDTH - mapSize) / 2;
@@ -50,6 +50,92 @@ void init_board(Board board[MAP_TILES][MAP_TILES]) {
            board[i][j].tile=rand()%6+1;
         }
     }
+}
+
+void init_board_Ice(Board board[MAP_TILES][MAP_TILES])
+{
+    int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
+    int tile = mapSize / MAP_TILES / 2;
+    int ox = (WINDOW_WIDTH - mapSize) / 2;
+   
+    int obstacle_map[MAP_TILES][MAP_TILES] = {
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,2,2,2,0,0,0,0,2,2,2,0,0,0,0,0},
+  {0,0,0,0,0,2,2,2,0,0,0,0,2,2,2,0,0,0,0,0},
+  {0,0,0,0,0,2,2,2,0,0,0,0,2,2,2,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0},
+  {0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0},
+  {0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+  {0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,2,0,0,0,0},
+  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+    };
+    for (int i = 0; i < MAP_TILES; ++i) {
+        for (int j = 0;j < MAP_TILES;++j) {
+            board[i][j].pos.x = 85 + ox + tile + j * tile * 2;
+            board[i][j].pos.y = 2 * tile + i * tile * 2;
+			board[i][j].obstacle = obstacle_map[i][j];
+            if (board[i][j].obstacle == 0) {
+				
+				if (rand() % 10 > 5) {
+                    board[i][j].obstacle = 1;
+					board[i][j].obstacle_tpye = rand() % 2; // 장애물 타입
+                    if (rand() % 10 > 5) {
+                        board[i][j].item = rand() % 3 + 1; // 아이템 확률
+                    }
+				}
+               
+            }
+        }
+    }
+    board[5][6].obstacle = 0;
+	board[5][13].obstacle = 0;
+}
+
+void draw_tile_forest(HDC hdc)
+{
+    
+    HBITMAP backgroundBitmap = ResourceManager::GetBitmap(BitmapID::ForestTileMax);
+    HDC backgroundDC = CreateCompatibleDC(hdc);
+    HBITMAP oldBackgroundBitmap = (HBITMAP)SelectObject(backgroundDC, backgroundBitmap);
+    int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
+    int tile = mapSize / MAP_TILES / 2;
+    int ox = (WINDOW_WIDTH - mapSize) / 2;
+
+
+
+    StretchBlt(hdc, 85 + ox + tile - 20, 2 * tile - 20, 800, 800, backgroundDC, 0, 0, 600, 520, SRCCOPY);
+    SelectObject(backgroundDC, oldBackgroundBitmap);
+    
+    DeleteDC(backgroundDC);
+    
+}
+
+void draw_tile_ice(HDC hdc)
+{
+    HBITMAP backgroundBitmap = ResourceManager::GetBitmap(BitmapID::IceTileMax);
+    HDC backgroundDC = CreateCompatibleDC(hdc);
+    HBITMAP oldBackgroundBitmap = (HBITMAP)SelectObject(backgroundDC, backgroundBitmap);
+    int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
+    int tile = mapSize / MAP_TILES / 2;
+    int ox = (WINDOW_WIDTH - mapSize) / 2;
+
+
+
+    StretchBlt(hdc, 85 + ox + tile - 20, 2 * tile - 20, 800, 800, backgroundDC, 0, 0, 1400, 1400, SRCCOPY);
+    SelectObject(backgroundDC, oldBackgroundBitmap);
+
+    DeleteDC(backgroundDC);
 }
 
 

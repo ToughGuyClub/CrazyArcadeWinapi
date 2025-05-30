@@ -13,5 +13,8 @@ typedef struct Board {
 
 }Board;
 #define MAP_TILES      20
-void init_board(Board board[MAP_TILES][MAP_TILES]);
+void init_board_Forest(Board board[MAP_TILES][MAP_TILES]);
+void init_board_Ice(Board board[MAP_TILES][MAP_TILES]);
+void draw_tile_forest(HDC hdc);
+void draw_tile_ice(HDC hdc);
 void DrawDarkOverlay(HDC hDC, int width, int height);

@@ -269,7 +269,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 p1.Init_Player(p1_start_point);
                 p2.Init_Player(p2_start_point);
                 p2.SetPlayerNum(2);
-                init_board(board);
+                init_board_Forest(board);
                
                 SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
                 SetTimer(hWnd, 2, 50, NULL);
@@ -278,9 +278,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
             else  if (wParam == '2') {
                 selected_stage = 2;
+                POINT p1_start_point = { 8,18 };
+                POINT p2_start_point = { 11,18 };
+                p1.Init_Player(p1_start_point);
+                p2.Init_Player(p2_start_point);
             }
             else  if (wParam == '3') {
                 selected_stage = 3;
+                POINT p1_start_point = { 6,5 };
+                POINT p2_start_point = { 13,5 };
+                int hueFilterMin = 0;   // 원하는 색 필터 범위
+                int hueFilterMax = 360;
+
+                HBITMAP original = ResourceManager::GetBitmap(BitmapID::Player1Moving);
+
+                HBITMAP recolored = AdjustBitmapHueWithFilter(original, p1.GetColor(), hueFilterMin, 20);
+                ResourceManager::SetBitmap(BitmapID::Player1Moving, recolored);
+
+                original = ResourceManager::GetBitmap(BitmapID::Player2Moving);
+                recolored = AdjustBitmapHueWithFilter(original, p2.GetColor(), hueFilterMin, 20);
+                ResourceManager::SetBitmap(BitmapID::Player2Moving, recolored);
+
+                p1.Init_Player(p1_start_point);
+                p2.Init_Player(p2_start_point);
+                p2.SetPlayerNum(2);
+                init_board_Ice(board);
+                SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
+                SetTimer(hWnd, 2, 50, NULL);
             }
             else if (wParam == 'a') {
              if (game_started) {
@@ -378,17 +402,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
                     StretchBlt(mem, 0, 0, 1450, 900, uiDC, 0, 0, 1040, 780, SRCCOPY);
 
-                    DrawGrid(mem, g_hInst, board,&p1,&p2);
+                 
+
+                   
 
 
                     if (selected_stage == 1) {
-
+                        draw_tile_forest(mem);
                         draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
                         draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
-
+                        DrawGrid_Forest(mem, g_hInst, board, &p1, &p2);
                         //p1.Draw_Player(mem, &p1, RGB(255, 0, 255));
                         //p2.Draw_Player(mem, &p2, RGB(0, 255, 255));
-
+                       
 
 
                         HBITMAP appleboxBitmap = ResourceManager::GetBitmap(BitmapID::ForestAppleBox);
@@ -427,9 +453,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     }
 					else if (selected_stage == 2) {
 						// 다른 스테이지 처리
+						
 					}
 					else if (selected_stage == 3) {
 						// 다른 스테이지 처리
+                        draw_tile_ice(mem);
+                        draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
+                        draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
+						DrawGrid_Ice(mem, g_hInst, board, &p1, &p2);
+                        wchar_t positionText[50];
+                        swprintf(positionText, 50, L"Y: %d, X: %d", p1.GetY(), p1.GetX());
+
+                        // 텍스트를 화면의 왼쪽 위에 출력
+                        TextOut(hdc, 10, 10, positionText, wcslen(positionText));
 					}
                     //화면 프레임 출력
                     std::wstring fpsText = L"FPS: " + std::to_wstring(currentFPS);

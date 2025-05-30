@@ -18,6 +18,7 @@ enum class BitmapID {
     ForestTile4,
     ForestTile5,
     ForestTile6,
+    ForestTileMax,
     ForestObstacle1,
     ForestObstacle2,
     ForestObstacle3,
@@ -26,6 +27,12 @@ enum class BitmapID {
     ForestTree,
     ForestApple,
     ForestAppleBox,
+    //얼음맵
+	IceTileMax,
+    IceBlock1,
+	IceBlock2,
+	IceObstacles,
+    
     //플레이어
     Player1Moving,
     Player2Moving,

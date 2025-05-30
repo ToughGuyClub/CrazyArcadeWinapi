@@ -37,12 +37,18 @@
 #define IDB_BITMAP_ITEM_POWER           151
 #define IDB_BITMAP_ITEM_SPEED           152
 #define IDB_BITMAP_ITEM_BOMBS           153
+#define IDB_BITMAP_FOREST_TILE_MAX      154
+#define IDB_BITMAP_ICE_OBSTACLES        155
+#define IDB_BITMAP_ICE_TILE1            158
+#define IDB_BITMAP_ICE_TILE_MAX         159
+#define IDB_BITMAP_ICE_BLOCK1           160
+#define IDB_BITMAP_ICE_BLOCK2           161
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        154
+#define _APS_NEXT_RESOURCE_VALUE        162
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101

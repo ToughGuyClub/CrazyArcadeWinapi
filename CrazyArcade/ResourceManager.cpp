@@ -19,6 +19,7 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
     bitmapMap[BitmapID::ForestTile4] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_4));
     bitmapMap[BitmapID::ForestTile5] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_5));
     bitmapMap[BitmapID::ForestTile6] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_GRASS_6));
+	bitmapMap[BitmapID::ForestTileMax] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_TILE_MAX));
     bitmapMap[BitmapID::ForestObstacle1] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_1));
     bitmapMap[BitmapID::ForestObstacle2] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_2));
     bitmapMap[BitmapID::ForestObstacle3] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_FOREST_OBSTACLE_3));
@@ -34,6 +35,12 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
     bitmapMap[BitmapID::ItemPower] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_POWER));
     bitmapMap[BitmapID::ItemBombCount] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_BOMBS));
     bitmapMap[BitmapID::ItemSpeed] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_SPEED));
+    //얼음맵
+	bitmapMap[BitmapID::IceTileMax] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_TILE_MAX));
+	bitmapMap[BitmapID::IceBlock1] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_BLOCK1));
+	bitmapMap[BitmapID::IceBlock2] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_BLOCK2));
+	bitmapMap[BitmapID::IceObstacles] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_OBSTACLES));
+
     // 여기에 추가 비트맵도 계속 등록
 
 }

@@ -195,6 +195,7 @@
     <Image Include="Resource\forest_tile\forest_obstacle\block_3.bmp" />
     <Image Include="Resource\forest_tile\forest_obstacle\block_4.bmp" />
     <Image Include="Resource\forest_tile\forest_obstacle\block_5.bmp" />
+    <Image Include="Resource\forest_tile\MAX_TILE.bmp" />
     <Image Include="Resource\forest_tile\tile_10.bmp" />
     <Image Include="Resource\forest_tile\tile_5.bmp" />
     <Image Include="Resource\forest_tile\tile_6.bmp" />
@@ -208,6 +209,11 @@
     <Image Include="Resource\game_start\P2_Check.bmp" />
     <Image Include="Resource\game_start\Select_Stage.bmp" />
     <Image Include="Resource\Game_UI.bmp" />
+    <Image Include="Resource\ice_tile\iceobjs.bmp" />
+    <Image Include="Resource\ice_tile\map_ice_block.bmp" />
+    <Image Include="Resource\ice_tile\map_ice_block2.bmp" />
+    <Image Include="Resource\ice_tile\map_ice_tile1.bmp" />
+    <Image Include="Resource\ice_tile\MAX_ICE_TILE.bmp" />
     <Image Include="Resource\item\Power.bmp" />
     <Image Include="Resource\item\Roller.bmp" />
     <Image Include="Resource\item\Water.bmp" />

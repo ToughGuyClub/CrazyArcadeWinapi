@@ -261,5 +261,23 @@
     <Image Include="Resource\item\Water.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="Resource\forest_tile\MAX_TILE.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\ice_tile\iceobjs.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\ice_tile\map_ice_tile1.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\ice_tile\MAX_ICE_TILE.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\ice_tile\map_ice_block.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\ice_tile\map_ice_block2.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -82,9 +82,9 @@ public:
 void HandlePlayerMovement(Player& player, const bool* keyStates, int upKey, int downKey, int leftKey, int rightKey, Board board[MAP_TILES][MAP_TILES]);
 void UpdatePlayerPosition(Player& player, float speed);
 
-
-void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2);
-
+//맵 그리기 플레이어 연동
+void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2);
+void DrawGrid_Ice(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2);
 
 //플레이어 색상 변경을 위해 필요한 함수들
 

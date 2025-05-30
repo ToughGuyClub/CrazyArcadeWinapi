@@ -179,7 +179,7 @@ void UpdatePlayerPosition(Player& player, float speed) {
         
     }
 }
-void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2) {
+void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2) {
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES / 2;
     int ox = (WINDOW_WIDTH - mapSize) / 2;
@@ -215,7 +215,7 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
 
     for (int i = 0; i < MAP_TILES; ++i) {
         for (int j = 0; j < MAP_TILES; ++j) {
-            COLORREF color;
+           /* COLORREF color;
             if (board[i][j].tile == 1) {
                 oldTile = (HBITMAP)SelectObject(tileDC, tilebit[0]);
                 StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
@@ -239,7 +239,7 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
             else if (board[i][j].tile == 6) {
                 oldTile = (HBITMAP)SelectObject(tileDC, tilebit[5]);
                 StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
+            }*/
             if (j == 11 && i == 2) {
                 HBITMAP treebit = ResourceManager::GetBitmap(BitmapID::ForestTree);
                 HDC treeDC = CreateCompatibleDC(hdc);
@@ -254,13 +254,14 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
 				TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES - 10, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 38, 38, RGB(255, 0, 255));
 				SelectObject(itemDC, oldItemBitmap);
             }
-			if (j == p1->GetX()) {
-				p1->Draw_Player(hdc, p1, p1->GetSelectedCharacter());
-			}
-			if (j == p2->GetX()) {
-				p2->Draw_Player(hdc, p2, p2->GetSelectedCharacter());
-			}
-          
+            if (j == p1->GetX() && i == p1->GetY()) {
+               
+            
+                p1->Draw_Player(hdc, p1, p1->GetSelectedCharacter());
+            }
+            if (j == p2->GetX() && i == p2->GetY()) {
+                p2->Draw_Player(hdc, p2, p2->GetSelectedCharacter());
+            }
 
 
 
@@ -282,7 +283,7 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
             }
             break;
             default:
-                color = RGB(255, 255, 255);
+        
                 break; // 0번 장애물은 그리지 않음
             }
 
@@ -297,6 +298,90 @@ void DrawGrid(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Pla
     DeleteObject(pen);
     SelectObject(tileDC, oldTile);
     DeleteDC(tileDC);
+
+}
+
+void DrawGrid_Ice(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2)
+{
+    int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
+    int tile = mapSize / MAP_TILES / 2;
+    int ox = (WINDOW_WIDTH - mapSize) / 2;
+    int oy = (WINDOW_HEIGHT - mapSize) / 2;
+
+    
+    HBITMAP IceBlockBitmap[2];
+    IceBlockBitmap[0] = ResourceManager::GetBitmap(BitmapID::IceBlock1);
+	IceBlockBitmap[1] = ResourceManager::GetBitmap(BitmapID::IceBlock2);
+    HDC IceBlockDC = CreateCompatibleDC(hdc);
+    HBITMAP oldIceBlockBitmap = (HBITMAP)SelectObject(IceBlockDC, IceBlockBitmap[0]);
+
+	HBITMAP obstacleBitmap;
+	obstacleBitmap = ResourceManager::GetBitmap(BitmapID::IceObstacles);
+	HDC obstacleDC = CreateCompatibleDC(hdc);
+	HBITMAP oldObstacleBitmap = (HBITMAP)SelectObject(obstacleDC, obstacleBitmap);
+
+    HBITMAP itemBitmap[3];
+    itemBitmap[0] = ResourceManager::GetBitmap(BitmapID::ItemPower);
+    itemBitmap[1] = ResourceManager::GetBitmap(BitmapID::ItemBombCount);
+    itemBitmap[2] = ResourceManager::GetBitmap(BitmapID::ItemSpeed);
+    HDC itemDC = CreateCompatibleDC(hdc);
+    HBITMAP oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[0]);
+    //얼음집
+    TransparentBlt(hdc, board[1][5].pos.x - MAP_TILES, board[2][5].pos.y - MAP_TILES, 120, 120, obstacleDC, 160, 0, 120, 120, RGB(255, 0, 255));
+    //얼음집
+    TransparentBlt(hdc, board[1][12].pos.x - MAP_TILES, board[2][5].pos.y - MAP_TILES, 120, 120, obstacleDC, 160, 0, 120, 120, RGB(255, 0, 255));
+
+    for (int i = 0; i < MAP_TILES; ++i) {
+        for (int j = 0; j < MAP_TILES; ++j) {
+           
+            if (board[i][j].item >= 1 && board[i][j].obstacle == 0) {
+                oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[board[i][j].item - 1]);
+                TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES - 10, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 38, 38, RGB(255, 0, 255));
+                SelectObject(itemDC, oldItemBitmap);
+            }
+            if (j == p1->GetX() && i == p1->GetY()) {
+
+
+                p1->Draw_Player(hdc, p1, p1->GetSelectedCharacter());
+            }
+            if (j == p2->GetX() && i == p2->GetY()) {
+                p2->Draw_Player(hdc, p2, p2->GetSelectedCharacter());
+            }
+            if (board[i][j].obstacle == 1) {
+                if (board[i][j].obstacle_tpye == 0) {
+                    (HBITMAP)SelectObject(IceBlockDC, IceBlockBitmap[board[i][j].obstacle_tpye]);
+                    TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES-25, 2 * MAP_TILES, 2 * MAP_TILES + 30, IceBlockDC, 0, 0, 42, 54, RGB(255, 0, 255));
+                    SelectObject(IceBlockDC, oldIceBlockBitmap);
+                }
+                else  if (board[i][j].obstacle_tpye == 1) {
+                    (HBITMAP)SelectObject(IceBlockDC, IceBlockBitmap[board[i][j].obstacle_tpye]);
+                    TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES , board[i][j].pos.y - MAP_TILES -15, 2 * MAP_TILES , 2 * MAP_TILES + 20, IceBlockDC, 0, 0, 42, 48, RGB(255, 0, 255));
+                    SelectObject(IceBlockDC, oldIceBlockBitmap);
+                }
+                
+            }
+           
+
+
+
+
+            if (board[i][j].obstacle == 1) {
+
+             
+            }
+           
+
+
+        }
+
+    }
+
+
+    DeleteDC(itemDC);
+    DeleteDC(obstacleDC);
+	DeleteDC(IceBlockDC);
+ 
+ 
 
 }
 
