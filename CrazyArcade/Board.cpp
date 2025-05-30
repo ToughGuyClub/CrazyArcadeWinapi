@@ -37,7 +37,7 @@ void init_board_Forest(Board board[MAP_TILES][MAP_TILES]) {
     
     for (int i = 0; i < MAP_TILES; ++i) {
         for (int j = 0; j < MAP_TILES; ++j) {
-         
+            board[i][j].item = 0;
             board[i][j].obstacle = obstacle_map[i][j];
             if (board[i][j].obstacle == 1) {
 				board[i][j].obstacle_tpye = rand() % 5 + 1; 
@@ -85,6 +85,7 @@ void init_board_Ice(Board board[MAP_TILES][MAP_TILES])
             board[i][j].pos.x = 85 + ox + tile + j * tile * 2;
             board[i][j].pos.y = 2 * tile + i * tile * 2;
 			board[i][j].obstacle = obstacle_map[i][j];
+            board[i][j].item = 0;
             if (board[i][j].obstacle == 0) {
 				
 				if (rand() % 10 > 5) {

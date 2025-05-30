@@ -14,7 +14,7 @@
 #define WINDOW_HEIGHT  800
 #define MAP_TILES      20
 #define TIMER_ID       1
-#define TIMER_INTERVAL 16
+#define TIMER_INTERVAL 12
 
 #define DIR_UP    0
 #define DIR_DOWN  1

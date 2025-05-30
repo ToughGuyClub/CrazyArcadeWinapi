@@ -209,6 +209,7 @@
     <Image Include="Resource\game_start\P2_Check.bmp" />
     <Image Include="Resource\game_start\Select_Stage.bmp" />
     <Image Include="Resource\Game_UI.bmp" />
+    <Image Include="Resource\ice_tile\Heart.bmp" />
     <Image Include="Resource\ice_tile\iceobjs.bmp" />
     <Image Include="Resource\ice_tile\map_ice_block.bmp" />
     <Image Include="Resource\ice_tile\map_ice_block2.bmp" />

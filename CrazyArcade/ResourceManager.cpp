@@ -40,6 +40,7 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
 	bitmapMap[BitmapID::IceBlock1] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_BLOCK1));
 	bitmapMap[BitmapID::IceBlock2] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_BLOCK2));
 	bitmapMap[BitmapID::IceObstacles] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_OBSTACLES));
+	bitmapMap[BitmapID::Heart] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_HEART));
 
     // 여기에 추가 비트맵도 계속 등록
 

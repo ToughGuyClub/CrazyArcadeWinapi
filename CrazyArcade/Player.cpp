@@ -185,9 +185,7 @@ void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILE
     int ox = (WINDOW_WIDTH - mapSize) / 2;
     int oy = (WINDOW_HEIGHT - mapSize) / 2;
 
-    HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-    HPEN oldPen = (HPEN)SelectObject(hdc, pen);
-
+  
     HDC tileDC = CreateCompatibleDC(hdc);
     HBITMAP tilebit[6];
     tilebit[0] = ResourceManager::GetBitmap(BitmapID::ForestTile1);
@@ -291,11 +289,10 @@ void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILE
         }
 
     }
- 
+	SelectObject(itemDC, oldItemBitmap);
     DeleteDC(itemDC);
+	SelectObject(obstacleDC, oldObstacleBitmap);
     DeleteDC(obstacleDC);
-    SelectObject(hdc, oldPen);
-    DeleteObject(pen);
     SelectObject(tileDC, oldTile);
     DeleteDC(tileDC);
 
@@ -376,9 +373,11 @@ void DrawGrid_Ice(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES],
 
     }
 
-
+	SelectObject(itemDC, oldItemBitmap);
     DeleteDC(itemDC);
+	SelectObject(obstacleDC, oldObstacleBitmap);
     DeleteDC(obstacleDC);
+    SelectObject(IceBlockDC, oldIceBlockBitmap);
 	DeleteDC(IceBlockDC);
  
  

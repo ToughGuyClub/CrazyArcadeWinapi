@@ -106,8 +106,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static int game_winner = 0; 
     static int p1_check_color_pos;
 	static int p2_check_color_pos;
+
+    //스테이지 1
     static int p1Applebox = 0;
     static int p2Applebox = 0;
+
+    //스테이지 2
+
+    //스테이지 3
+	static int p1CurrentHeart = 0;
+	static int p2CurrentHeart = 0;
+
     switch (msg) {
     case WM_CREATE:
         p1_check_color_pos = 270;
@@ -196,31 +205,61 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
             break;
         case 2:
-            
+            //플레이어 폭탄 충돌
             for (int i = 0;i < p1bombs.size();++i) {
 				if (!p1bombs.data()[i].GetIsCollisionPlayer()&&p1bombs.data()[i].GetState() == 2) {
                     if (p1bombs.data()[i].collision_bomb_player(p1bombs.data()[i], p2)) {
                         if (selected_stage == 1) {
+							//스테이지 1 충돌 처리
                             if (p2.GetCurrentApple() > 0)
 								p1.SetCurrentApple(p1.GetCurrentApple() + 1);
                                 p2.SetCurrentApple(p2.GetCurrentApple() - 1);
                             p1bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 2와 충돌한 경우
                         }
+                        else if (selected_stage == 2) {
+                            //스테이지 2 충돌 처리
+                           
+                        }
+                        else if (selected_stage == 3) {
+                            //스테이지 3 충돌 처리
+                            p2CurrentHeart--;
+							if (p2CurrentHeart <= 0) {
+								game_end = true;
+								game_winner = 1; // 플레이어 1 승리
+							}
+                        }
                     }
 				}
             }
-            for (int i = 0;i < p2bombs.size();++i) {
-                if (!p2bombs.data()[i].GetIsCollisionPlayer() && p2bombs.data()[i].GetState() == 2) {
-                    if (p2bombs.data()[i].collision_bomb_player(p2bombs.data()[i], p1)) {
-                        if (selected_stage == 1) {
-                            if (p1.GetCurrentApple() > 0)
-                                p2.SetCurrentApple(p2.GetCurrentApple() + 1);
+          
+            if (selected_stage == 1) {
+                for (int i = 0;i < p2bombs.size();++i) {
+                    if (!p2bombs.data()[i].GetIsCollisionPlayer() && p2bombs.data()[i].GetState() == 2) {
+                        if (p2bombs.data()[i].collision_bomb_player(p2bombs.data()[i], p1)) {
+                            //스테이지 별 충돌 처리
+                            if (selected_stage == 1) {
+                                //스테이지 1 충돌 처리
+                                if (p1.GetCurrentApple() > 0)
+                                    p2.SetCurrentApple(p2.GetCurrentApple() + 1);
                                 p1.SetCurrentApple(p1.GetCurrentApple() - 1);
-                            p2bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 1과 충돌한 경우
+                                p2bombs.data()[i].SetIsCollisionPlayer(true); // 플레이어 1과 충돌한 경우
+                            }
+							else if (selected_stage == 2) {
+								//스테이지 2 충돌 처리
+							}
+							else if (selected_stage == 3) {
+								//스테이지 3 충돌 처리
+                                p1CurrentHeart--;
+								if (p1CurrentHeart <= 0) {
+									game_end = true;
+									game_winner = 2; // 플레이어 2 승리
+								}
+							}
                         }
                     }
                 }
             }
+            
             for (int i = 0;i < p1bombs.size();++i) {
                 if (p1bombs.data()[i].tick_Bomb()) {
                     p1bombs.erase(p1bombs.begin() + i);
@@ -301,6 +340,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
                 p1.Init_Player(p1_start_point);
                 p2.Init_Player(p2_start_point);
+                p1CurrentHeart = 3;
+				p2CurrentHeart = 3;
                 p2.SetPlayerNum(2);
                 init_board_Ice(board);
                 SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
@@ -401,8 +442,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     HDC uiDC = CreateCompatibleDC(mem);
                     HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
                     StretchBlt(mem, 0, 0, 1450, 900, uiDC, 0, 0, 1040, 780, SRCCOPY);
-
-                 
+                    SelectObject(uiDC, oldUIBitmap);
+                    DeleteObject(gameui);
+                    DeleteDC(uiDC);
 
                    
 
@@ -443,9 +485,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
                         SelectObject(appleboxDC, oldAppleboxBitmap);
                         SelectObject(applexDC, oldApplexBitmap);
-                        SelectObject(uiDC, oldUIBitmap);
-                        DeleteObject(gameui);
-                        DeleteDC(uiDC);
+                        
+                      
                         DeleteObject(appleboxBitmap);
                         DeleteObject(applexBitmap);
                         DeleteDC(appleboxDC);
@@ -464,8 +505,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         wchar_t positionText[50];
                         swprintf(positionText, 50, L"Y: %d, X: %d", p1.GetY(), p1.GetX());
 
-                        // 텍스트를 화면의 왼쪽 위에 출력
-                        TextOut(hdc, 10, 10, positionText, wcslen(positionText));
+                        //플레이어 하트 출력
+						HBITMAP heartBitmap = ResourceManager::GetBitmap(BitmapID::Heart);
+						HDC heartDC = CreateCompatibleDC(mem);
+						HBITMAP oldHeartBitmap = (HBITMAP)SelectObject(heartDC, heartBitmap);
+						for (int i = 0; i < p1CurrentHeart; ++i) {
+							TransparentBlt(mem, 10 + i * 90, 250, 80, 64, heartDC, 0, 0, 80, 64, RGB(255, 0, 255));
+						}
+						for (int i = 0; i < p2CurrentHeart; ++i) {
+							TransparentBlt(mem, 1170 + i * 90, 250, 80, 64, heartDC, 0, 0, 80, 64, RGB(255, 0, 255));
+						}
+						SelectObject(heartDC, oldHeartBitmap);
+						
+						DeleteDC(heartDC);
 					}
                     //화면 프레임 출력
                     std::wstring fpsText = L"FPS: " + std::to_wstring(currentFPS);

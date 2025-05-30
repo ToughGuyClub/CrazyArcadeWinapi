@@ -32,6 +32,7 @@ enum class BitmapID {
     IceBlock1,
 	IceBlock2,
 	IceObstacles,
+    Heart,
     
     //플레이어
     Player1Moving,

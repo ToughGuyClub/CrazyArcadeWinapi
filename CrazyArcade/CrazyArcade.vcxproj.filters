@@ -279,5 +279,8 @@
     <Image Include="Resource\ice_tile\map_ice_block2.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="Resource\ice_tile\Heart.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

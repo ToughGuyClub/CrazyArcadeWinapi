@@ -43,12 +43,13 @@
 #define IDB_BITMAP_ICE_TILE_MAX         159
 #define IDB_BITMAP_ICE_BLOCK1           160
 #define IDB_BITMAP_ICE_BLOCK2           161
+#define IDB_BITMAP_HEART                162
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        162
+#define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
