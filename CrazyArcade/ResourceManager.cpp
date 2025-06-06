@@ -35,6 +35,18 @@ void ResourceManager::LoadAll(HINSTANCE hInst) {
     bitmapMap[BitmapID::ItemPower] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_POWER));
     bitmapMap[BitmapID::ItemBombCount] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_BOMBS));
     bitmapMap[BitmapID::ItemSpeed] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ITEM_SPEED));
+    //µµ½Ã¸Ê
+	bitmapMap[BitmapID::CityTileMax] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_TILE_CITY));
+	bitmapMap[BitmapID::CityRail] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_RAIL));
+	bitmapMap[BitmapID::CityTrain] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_TRAIN));
+	bitmapMap[BitmapID::CityBuilding1] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_BUILDING1));
+	bitmapMap[BitmapID::CityBuilding2] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_BUILDING2));
+	bitmapMap[BitmapID::CityBuilding3] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_BUILDING3));
+	bitmapMap[BitmapID::CityObstacles] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_OBJECTS));
+	bitmapMap[BitmapID::CityTrashbox] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_TRASHBOX));
+	bitmapMap[BitmapID::CityBlinkerON] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_BLINKER_ON));
+	bitmapMap[BitmapID::CityBlinkerOFF] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_BLINKER));
+	bitmapMap[BitmapID::CityClock] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_CITY_CLOCK));
     //¾óÀ½¸Ê
 	bitmapMap[BitmapID::IceTileMax] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_TILE_MAX));
 	bitmapMap[BitmapID::IceBlock1] = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP_ICE_BLOCK1));

@@ -1,5 +1,5 @@
 ﻿#include"pch.h"
-
+#include"Train.h"
 #include"Bomb.h"
 #include"ResourceManager.h"
 HINSTANCE g_hInst;
@@ -112,7 +112,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static int p2Applebox = 0;
 
     //스테이지 2
-
+	static Train train;
+    static int p1Time = 0;
+	static int p2Time = 0;
+	static int p1currentTime = 100;
+	static int p2currentTime = 100;
     //스테이지 3
 	static int p1CurrentHeart = 0;
 	static int p2CurrentHeart = 0;
@@ -191,8 +195,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 HandlePlayerMovement(p2, keyStates, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, board);
                 UpdatePlayerPosition(p2, p2.Getspeed()/8.0f);
 
-                p1.collision_item(&p1, board);
-                p2.collision_item(&p2, board);
+                p1.collision_item(&p1, board, p1currentTime);
+                p2.collision_item(&p2, board, p2currentTime);
             }
             frameCount++;
 
@@ -202,6 +206,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 frameCount = 0;
                 lastTime = currentTime;
             }
+            if (selected_stage == 2) {
+                p1Time++;
+                p2Time++;
+                if (p1Time >= 50) {
+                    p1Time = 0;
+                    p1currentTime--;
+                }
+                if (p2Time >= 50) {
+                    p2Time = 0;
+                    p2currentTime--;
+                }
+
+				if (p1currentTime <= 0) {
+					game_end = true;
+					game_winner = 2; // 플레이어 2 승리
+				}
+				else if (p2currentTime <= 0) {
+					game_end = true;
+					game_winner = 1; // 플레이어 1 승리
+				}
+            }
+            if (move_train(train)) {
+                make_item(train, board);
+				
+            }
+			move_item(train, board);
         }
             break;
         case 2:
@@ -218,7 +248,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         }
                         else if (selected_stage == 2) {
                             //스테이지 2 충돌 처리
-                           
+							p2currentTime-=2;
+
+							if (p2currentTime <= 0) {
+								game_end = true;
+								game_winner = 1; // 플레이어 1 승리
+							}
+                            p1bombs.data()[i].SetIsCollisionPlayer(true);
                         }
                         else if (selected_stage == 3) {
                             //스테이지 3 충돌 처리
@@ -246,6 +282,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                             }
 							else if (selected_stage == 2) {
 								//스테이지 2 충돌 처리
+								p1currentTime-=2;
+								if (p1currentTime <= 0) {
+									game_end = true;
+									game_winner = 2; // 플레이어 2 승리
+								}
+                                p2bombs.data()[i].SetIsCollisionPlayer(true);
 							}
 							else if (selected_stage == 3) {
 								//스테이지 3 충돌 처리
@@ -319,8 +361,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 selected_stage = 2;
                 POINT p1_start_point = { 8,18 };
                 POINT p2_start_point = { 11,18 };
+				init_board_City(board);
                 p1.Init_Player(p1_start_point);
                 p2.Init_Player(p2_start_point);
+				init_train(train);
+                p1currentTime = 30;
+				p2currentTime = 30;
+                SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
+                SetTimer(hWnd, 2, 50, NULL);
             }
             else  if (wParam == '3') {
                 selected_stage = 3;
@@ -438,6 +486,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					DeleteDC(p2CheckDC);
                 }
 				else if (selected_stage >= 1) {
+                    //공통UI 출력
+
+					//게임 UI 출력
                     HBITMAP gameui = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAMEUI));
                     HDC uiDC = CreateCompatibleDC(mem);
                     HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
@@ -445,9 +496,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     SelectObject(uiDC, oldUIBitmap);
                     DeleteObject(gameui);
                     DeleteDC(uiDC);
-
-                   
-
+					HBITMAP p1bitmap = ResourceManager::GetBitmap(BitmapID::Player1Moving);
+					HBITMAP p2bitmap = ResourceManager::GetBitmap(BitmapID::Player2Moving);
+					HBITMAP pmask = ResourceManager::GetBitmap(BitmapID::PlayerMovingMask);
+					HDC p1DC = CreateCompatibleDC(mem);
+					HDC p2DC = CreateCompatibleDC(mem);
+					HBITMAP oldMaskBitmap = (HBITMAP)SelectObject(p1DC, pmask);
+					HBITMAP oldP1Bitmap = (HBITMAP)SelectObject(p1DC, p1bitmap);
+					HBITMAP oldP2Bitmap = (HBITMAP)SelectObject(p2DC, p2bitmap);
+					TransparentBlt(mem, 175, 150, 80, 50, p1DC, 0, 0, 50, 40, RGB(255, 0, 255));
+					TransparentBlt(mem, 1195, 150, 80, 50, p2DC, 0, 0, 50, 40, RGB(255, 0, 255));
+					SelectObject(p1DC, oldMaskBitmap);
+					SelectObject(p1DC, oldP1Bitmap);
+					SelectObject(p2DC, oldP2Bitmap);
+					DeleteDC(p1DC);
+					DeleteDC(p2DC);
+					DeleteObject(pmask);
 
                     if (selected_stage == 1) {
                         draw_tile_forest(mem);
@@ -487,14 +551,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         SelectObject(applexDC, oldApplexBitmap);
                         
                       
-                        DeleteObject(appleboxBitmap);
-                        DeleteObject(applexBitmap);
+                        
                         DeleteDC(appleboxDC);
                         DeleteDC(applexDC);
                     }
 					else if (selected_stage == 2) {
 						// 다른 스테이지 처리
+                        draw_tile_city(mem);
+                        draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
+                        draw_Bomb(mem, g_hInst, p2bombs.data(), static_cast<int>(p2bombs.size()), board, &p2);
+						DrawGrid_City(mem, g_hInst, board, &p1, &p2,train);
+
+                        //플레이어 시간 출력
+						wchar_t p1Time[3];
+                        swprintf(p1Time, 3, L"%d", p1currentTime);
+						DrawOutlinedText(mem, 215, 250, p1Time);
+						wchar_t p2Time[3];
+						swprintf(p2Time, 3, L"%d", p2currentTime);
+						DrawOutlinedText(mem, 1370, 250, p2Time);
 						
+
 					}
 					else if (selected_stage == 3) {
 						// 다른 스테이지 처리

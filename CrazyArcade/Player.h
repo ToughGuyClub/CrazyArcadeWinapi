@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.h"
-
+#include"Train.h"
 
 
 #include"Board.h"
@@ -30,7 +30,7 @@ public:
     void Draw_Player(HDC hdc, Player* p, int character);
 
     void on_applebox(Player* player, int* applebox, int boxX, int boxY);
-    void collision_item(Player* player, Board board[MAP_TILES][MAP_TILES]);
+    void collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],int& Pcurrenttime);
 
 public:
     // Getter
@@ -84,6 +84,7 @@ void UpdatePlayerPosition(Player& player, float speed);
 
 //맵 그리기 플레이어 연동
 void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2);
+void DrawGrid_City(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2,Train train);  
 void DrawGrid_Ice(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2);
 
 //플레이어 색상 변경을 위해 필요한 함수들

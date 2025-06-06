@@ -51,6 +51,9 @@
     <ClInclude Include="ResourceManager.h">
       <Filter>헤더 파일\ResourceManager</Filter>
     </ClInclude>
+    <ClInclude Include="Train.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CrazyArcade.cpp">
@@ -66,6 +69,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Train.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -280,6 +286,39 @@
       <Filter>리소스 파일</Filter>
     </Image>
     <Image Include="Resource\ice_tile\Heart.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\city_tile_max.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\Rail.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\Train.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\building1.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\building2.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\building3.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\citty_objects.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\trash.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\blinker.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\blinker_on.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resource\city_tile\City_item.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>

@@ -27,6 +27,18 @@ enum class BitmapID {
     ForestTree,
     ForestApple,
     ForestAppleBox,
+    //µµ½Ã
+	CityTileMax,
+    CityRail,
+	CityTrain,
+    CityBuilding1,
+    CityBuilding2,
+    CityBuilding3,
+	CityObstacles,
+    CityTrashbox,
+    CityBlinkerOFF,
+	CityBlinkerON,
+    CityClock,
     //¾óÀ½¸Ê
 	IceTileMax,
     IceBlock1,

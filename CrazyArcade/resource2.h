@@ -44,12 +44,24 @@
 #define IDB_BITMAP_ICE_BLOCK1           160
 #define IDB_BITMAP_ICE_BLOCK2           161
 #define IDB_BITMAP_HEART                162
+#define IDB_BITMAP_TILE_CITY            163
+#define IDB_BITMAP_CITY_RAIL            164
+#define IDB_BITMAP_CITY_TRAIN           165
+#define IDB_BITMAP_CITY_BUILDING1       166
+#define IDB_BITMAP_CITY_BUILDING2       167
+#define IDB_BITMAP_CITY_BUILDING3       168
+#define IDB_BITMAP_CITY_OBJECTS         169
+#define IDB_BITMAP_CITY_TRASHBOX        170
+#define IDB_BITMAP_CITY_BLINKER         171
+#define IDB_BITMAP_BLINKER_ON           172
+
+#define IDB_BITMAP_CITY_CLOCK           173
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        163
+#define _APS_NEXT_RESOURCE_VALUE        174
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101

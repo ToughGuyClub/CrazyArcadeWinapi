@@ -109,7 +109,7 @@ void Player::on_applebox(Player* player, int* applebox, int boxX, int boxY)
     }
 }
 
-void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES])
+void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],int& Pcurrenttime)
 {
 	int px = player->GetX();
 	int py = player->GetY();
@@ -127,6 +127,14 @@ void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES])
 		player->SetSpeed(player->Getspeed() + 0.1f);
 		board[py][px].item = 0; // 아이템 사용 후 제거
 	}
+	else if (board[py][px].item == 4) { // 시계 아이템 도시맵 전용
+		if (Pcurrenttime > 0) {
+			Pcurrenttime += 5; // 시간 증가
+			board[py][px].item = 0; // 아이템 사용 후 제거
+		}
+		
+	}
+	
 }
 
 
@@ -208,36 +216,13 @@ void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILE
     itemBitmap[0] = ResourceManager::GetBitmap(BitmapID::ItemPower);
 	itemBitmap[1] = ResourceManager::GetBitmap(BitmapID::ItemBombCount);
 	itemBitmap[2] = ResourceManager::GetBitmap(BitmapID::ItemSpeed);
+
 	HDC itemDC = CreateCompatibleDC(hdc);
 	HBITMAP oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[0]);
 
     for (int i = 0; i < MAP_TILES; ++i) {
         for (int j = 0; j < MAP_TILES; ++j) {
-           /* COLORREF color;
-            if (board[i][j].tile == 1) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[0]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 2) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[1]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 3) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[2]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 4) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[3]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 5) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[4]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }
-            else if (board[i][j].tile == 6) {
-                oldTile = (HBITMAP)SelectObject(tileDC, tilebit[5]);
-                StretchBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, tileDC, 0, 0, 40, 40, SRCCOPY);
-            }*/
+          
             if (j == 11 && i == 2) {
                 HBITMAP treebit = ResourceManager::GetBitmap(BitmapID::ForestTree);
                 HDC treeDC = CreateCompatibleDC(hdc);
@@ -289,6 +274,9 @@ void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILE
         }
 
     }
+ 
+ 
+
 	SelectObject(itemDC, oldItemBitmap);
     DeleteDC(itemDC);
 	SelectObject(obstacleDC, oldObstacleBitmap);
@@ -296,6 +284,149 @@ void DrawGrid_Forest(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILE
     SelectObject(tileDC, oldTile);
     DeleteDC(tileDC);
 
+}
+
+void DrawGrid_City(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2, Train train)
+{
+    int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
+    int tile = mapSize / MAP_TILES / 2;
+    int ox = (WINDOW_WIDTH - mapSize) / 2;
+    int oy = (WINDOW_HEIGHT - mapSize) / 2;
+
+    RECT boardRect = { 320, 0, 1125, 1000 }; // 원하는 사각형 영역
+
+    //건물 리소스
+    HBITMAP building1Bitmap = ResourceManager::GetBitmap(BitmapID::CityBuilding1);
+    HDC  building1DC = CreateCompatibleDC(hdc);
+    HBITMAP  oldbuilding1Bitmap = (HBITMAP)SelectObject(building1DC, building1Bitmap);
+    HBITMAP building2Bitmap = ResourceManager::GetBitmap(BitmapID::CityBuilding2);
+    HDC  building2DC = CreateCompatibleDC(hdc);
+    HBITMAP  oldbuilding2Bitmap = (HBITMAP)SelectObject(building2DC, building2Bitmap);
+	HBITMAP bulding3Bitmap = ResourceManager::GetBitmap(BitmapID::CityBuilding3);
+	HDC  building3DC = CreateCompatibleDC(hdc);
+	HBITMAP  oldbuilding3Bitmap = (HBITMAP)SelectObject(building3DC, bulding3Bitmap);
+    //장애물 리소스
+	HBITMAP obstacleBitmap = ResourceManager::GetBitmap(BitmapID::CityObstacles);
+	HDC obstacleDC = CreateCompatibleDC(hdc);
+	HBITMAP oldObstacleBitmap = (HBITMAP)SelectObject(obstacleDC, obstacleBitmap);
+	HBITMAP TrashboxBitmap = ResourceManager::GetBitmap(BitmapID::CityTrashbox);
+	HDC TrashboxDC = CreateCompatibleDC(hdc);
+	HBITMAP oldTrashboxBitmap = (HBITMAP)SelectObject(TrashboxDC, TrashboxBitmap);
+    //신호등 리소스
+	HBITMAP BlinkerBitmap = ResourceManager::GetBitmap(BitmapID::CityBlinkerOFF);
+	HDC BlinkerDC = CreateCompatibleDC(hdc);
+	HBITMAP oldBlinkerBitmap = (HBITMAP)SelectObject(BlinkerDC, BlinkerBitmap);
+	HBITMAP BlinkerBitmapON = ResourceManager::GetBitmap(BitmapID::CityBlinkerON);
+	HBITMAP oldBlinkerBitmapON = (HBITMAP)SelectObject(BlinkerDC, BlinkerBitmapON);
+
+	// 아이템 리소스
+    HBITMAP itemBitmap[4];
+    itemBitmap[0] = ResourceManager::GetBitmap(BitmapID::ItemPower);
+    itemBitmap[1] = ResourceManager::GetBitmap(BitmapID::ItemBombCount);
+    itemBitmap[2] = ResourceManager::GetBitmap(BitmapID::ItemSpeed);
+    itemBitmap[3] = ResourceManager::GetBitmap(BitmapID::CityClock);
+    HDC itemDC = CreateCompatibleDC(hdc);
+    HBITMAP oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[0]);
+
+   
+    // 1. 기존 클리핑 영역 설정
+    SaveDC(hdc); // 현재 DC 상태 저장 (복원 시 필요)
+    IntersectClipRect(hdc, boardRect.left, boardRect.top, boardRect.right, boardRect.bottom);
+
+    // 2. 특정 영역 내에서만 그리기
+   
+    for (int i = 0; i < MAP_TILES; ++i) {
+        for (int j = 0; j < MAP_TILES; ++j) {
+            if (board[i][j].obstacle==1) {
+                if (board[i][j].obstacle_tpye == 1) {
+					TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - 90, 40, 112, obstacleDC, 560, 0, 40, 112, RGB(255, 0, 255));
+				}
+				else if (board[i][j].obstacle_tpye == 2) {
+					TransparentBlt(hdc, board[i][j].pos.x - 25, board[i][j].pos.y - 25, 50, 50, TrashboxDC, 0, 0, 64, 64, RGB(255, 0, 255));
+				}
+                else if (board[i][j].obstacle_tpye == 3) {
+
+                }
+				
+            }
+            else if (board[i][j].obstacle == 3) {
+				
+				TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - 120, 80,140, building1DC, 0, 0, 68, 149, RGB(255, 0, 255));
+				
+            }
+            else if (board[i][j].obstacle == 4) {
+               
+                TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - 140, 80, 160, building2DC, 0, 0, 68, 166, RGB(255, 0, 255));
+                
+            }
+            else if (board[i][j].obstacle == 5) {
+                TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - 120, 80, 140, building3DC, 0, 0, 68, 109, RGB(255, 0, 255));
+
+            }
+            else if (board[i][j].obstacle == 6) {
+                if (train.is_spawned) {
+                    SelectObject(BlinkerDC, BlinkerBitmap);
+                    TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - 90, 40, 110, BlinkerDC, 0, 0, 40, 110, RGB(255, 0, 255));
+                }
+                else {
+                    SelectObject(BlinkerDC, BlinkerBitmapON);
+                    TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - 90, 40, 110, BlinkerDC, 0, 0, 40, 110, RGB(255, 0, 255));
+                }
+            }
+            if(i==10&&j==0) draw_train(hdc, train);
+            if (board[i][j].item >= 1 && board[i][j].obstacle == 0) {
+                oldItemBitmap = (HBITMAP)SelectObject(itemDC, itemBitmap[board[i][j].item - 1]);
+				if (board[i][j].item == 4) // 시계 아이템
+					TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES - 10, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 40, 46, RGB(255, 0, 255));
+				else
+                TransparentBlt(hdc, board[i][j].pos.x - MAP_TILES, board[i][j].pos.y - MAP_TILES - 10, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 38, 38, RGB(255, 0, 255));
+                SelectObject(itemDC, oldItemBitmap);
+            }
+            // 플레이어 1을 그리기
+            if (j == p1->GetX() && i == p1->GetY()) {
+                p1->Draw_Player(hdc, p1, p1->GetSelectedCharacter());
+            }
+
+            // 플레이어 2를 그리기
+            if (j == p2->GetX() && i == p2->GetY()) {
+                p2->Draw_Player(hdc, p2, p2->GetSelectedCharacter());
+            }
+        }
+    }
+    for (int i = 0;i < 6;++i) {
+       
+      
+        if (train.item[i].is_active) {
+            SelectObject(itemDC, itemBitmap[train.item[i].type-1]);
+            if (train.item[i].type == 4) // 시계 아이템
+                TransparentBlt(hdc, train.item[i].pos.x - MAP_TILES, train.item[i].pos.y - MAP_TILES - 10, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 40, 46, RGB(255, 0, 255));
+            else
+                TransparentBlt(hdc, train.item[i].pos.x - MAP_TILES, train.item[i].pos.y - MAP_TILES, 2 * MAP_TILES, 2 * MAP_TILES, itemDC, 0, 0, 38, 38, RGB(255, 0, 255));
+        }
+    }
+    SelectObject(building1DC, oldbuilding1Bitmap);
+    DeleteDC(building1DC);
+    SelectObject(building2DC, oldbuilding2Bitmap);
+    DeleteDC(building2DC);
+	SelectObject(building3DC, oldbuilding3Bitmap);
+	DeleteDC(building3DC);
+	SelectObject(obstacleDC, oldObstacleBitmap);
+	DeleteDC(obstacleDC);
+	SelectObject(TrashboxDC, oldTrashboxBitmap);
+	DeleteDC(TrashboxDC);
+	SelectObject(BlinkerDC, oldBlinkerBitmap);
+	SelectObject(BlinkerDC, oldBlinkerBitmapON);
+    DeleteDC(BlinkerDC);
+	SelectObject(itemDC, oldItemBitmap);
+	DeleteDC(itemDC);
+	// 3. 클리핑 영역 복원
+	SelectClipRgn(hdc, NULL); // 클리핑 영역 제거
+	// 4. DC 상태 복원
+
+
+	
+    // 3. DC 상태 복원
+    RestoreDC(hdc, -1); // SaveDC로 저장했던 상태를 복원
 }
 
 void DrawGrid_Ice(HDC hdc, HINSTANCE g_hInst, Board board[MAP_TILES][MAP_TILES], Player* p1, Player* p2)

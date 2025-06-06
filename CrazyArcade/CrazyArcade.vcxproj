@@ -148,6 +148,7 @@
     <ClInclude Include="resource2.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Train.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Board.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="CrazyArcade.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Train.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CrazyArcade.rc" />
@@ -186,6 +188,17 @@
     <Image Include="CrazyArcade.ico" />
     <Image Include="Resource\1.bmp" />
     <Image Include="resource\bitmap1.bmp" />
+    <Image Include="Resource\city_tile\blinker.bmp" />
+    <Image Include="Resource\city_tile\blinker_on.bmp" />
+    <Image Include="Resource\city_tile\building1.bmp" />
+    <Image Include="Resource\city_tile\building2.bmp" />
+    <Image Include="Resource\city_tile\building3.bmp" />
+    <Image Include="Resource\city_tile\citty_objects.bmp" />
+    <Image Include="Resource\city_tile\City_item.bmp" />
+    <Image Include="Resource\city_tile\city_tile_max.bmp" />
+    <Image Include="Resource\city_tile\Rail.bmp" />
+    <Image Include="Resource\city_tile\Train.bmp" />
+    <Image Include="Resource\city_tile\trash.bmp" />
     <Image Include="Resource\down1.bmp" />
     <Image Include="Resource\down2.bmp" />
     <Image Include="Resource\forest_tile\Forest_Apple.bmp" />
