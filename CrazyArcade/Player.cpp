@@ -109,7 +109,7 @@ void Player::on_applebox(Player* player, int* applebox, int boxX, int boxY)
     }
 }
 
-void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],int& Pcurrenttime)
+int Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],int& Pcurrenttime)
 {
 	int px = player->GetX();
 	int py = player->GetY();
@@ -117,15 +117,18 @@ void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],in
 	if (board[py][px].item == 1) { // 물풍선 사거리 증가
 		player->SetBomb_distance(player->GetBomb_distance() + 1);
 		board[py][px].item = 0; // 아이템 사용 후 제거
+        return 1;
 	}
 	else if (board[py][px].item == 2) { // 물풍선 개수 증가
 		player->SetMaxBomb(player->GetMaxBomb() + 1);
 		board[py][px].item = 0; // 아이템 사용 후 제거
+        return 2;
 	}
 	else if (board[py][px].item == 3) { // 이동 속도 증가
 		if (player->Getspeed() < 1.5f) // 최대 속도 제한
 		player->SetSpeed(player->Getspeed() + 0.1f);
 		board[py][px].item = 0; // 아이템 사용 후 제거
+        return 3;
 	}
 	else if (board[py][px].item == 4) { // 시계 아이템 도시맵 전용
 		if (Pcurrenttime > 0) {
@@ -134,7 +137,25 @@ void Player::collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],in
 		}
 		
 	}
-	
+    return 0;
+}
+
+int Player::collision_train(Player* player, Train& train, Board board[MAP_TILES][MAP_TILES], int& Pcurrenttime)
+{
+	int px = board[player->GetY()][player->GetX()].pos.x; // 플레이어의 x 좌표
+	int py = board[player->GetY()][player->GetX()].pos.y; // 플레이어의 y 좌표
+	// 플레이어가 기차와 충돌했는지 확인
+    if (train.is_spawned) {
+        if (px >= train.Pos.left && px <= train.Pos.right) {
+            if (py >= train.Pos.top && py <= train.Pos.bottom) {
+                Pcurrenttime -= 2;
+                return 1;
+            }
+
+
+        }
+    }
+    return 0;
 }
 
 

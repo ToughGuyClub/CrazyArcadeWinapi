@@ -30,7 +30,8 @@ public:
     void Draw_Player(HDC hdc, Player* p, int character);
 
     void on_applebox(Player* player, int* applebox, int boxX, int boxY);
-    void collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],int& Pcurrenttime);
+    int collision_item(Player* player, Board board[MAP_TILES][MAP_TILES],int& Pcurrenttime);
+	int collision_train(Player* player, Train& train, Board board[MAP_TILES][MAP_TILES], int& Pcurrenttime);
 
 public:
     // Getter

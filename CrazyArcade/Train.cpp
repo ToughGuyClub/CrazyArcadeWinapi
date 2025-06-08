@@ -34,7 +34,8 @@ int move_train(Train& train) {
 		if (train.spawnTime >= train.spawnInterval) {
 			train.is_spawned = true;
 			train.spawnTime = 0; // 리셋
-
+			train.collisionP1 = false; // 충돌 상태 초기화
+			train.collisionP2 = false; // 충돌 상태 초기화
 		}
 	}
 	
@@ -93,7 +94,7 @@ void move_item(Train& train, Board board[MAP_TILES][MAP_TILES])
 			int dx = target.x - cur.x;
 			int dy = target.y - cur.y;
 
-			// 거리 계산 (피타고라스)
+			
 			float distance = sqrtf(dx * dx + dy * dy);
 
 			if (distance < 10.0f) {
@@ -111,3 +112,4 @@ void move_item(Train& train, Board board[MAP_TILES][MAP_TILES])
 		}
 	}
 }
+

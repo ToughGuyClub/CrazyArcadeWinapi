@@ -121,6 +121,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	static int p1CurrentHeart = 0;
 	static int p2CurrentHeart = 0;
 
+    //현재 아이템 개수 파악
+	static int p1_current_item[3] = { 0,0,0 }; 
+	static int p2_current_item[3] = { 0,0,0 }; 
+
     switch (msg) {
     case WM_CREATE:
         p1_check_color_pos = 270;
@@ -195,8 +199,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 HandlePlayerMovement(p2, keyStates, VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, board);
                 UpdatePlayerPosition(p2, p2.Getspeed()/8.0f);
 
-                p1.collision_item(&p1, board, p1currentTime);
-                p2.collision_item(&p2, board, p2currentTime);
+                int temp = -1;
+                temp=p1.collision_item(&p1, board, p1currentTime)-1;
+				if (temp >= 0 && temp < 3) { // 아이템이 유효한 범위 내에 있는지 확인
+					p1_current_item[temp]++; // 아이템 개수 증가
+				}
+				
+               temp= p2.collision_item(&p2, board, p2currentTime)-1;
+			
+               if (temp >= 0 && temp < 3) { // 아이템이 유효한 범위 내에 있는지 확인
+				   p2_current_item[temp]++; // 아이템 개수 증가
+               }
             }
             frameCount++;
 
@@ -207,6 +220,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 lastTime = currentTime;
             }
             if (selected_stage == 2) {
+                if (move_train(train)) {
+                    make_item(train, board);
+
+                }
+                move_item(train, board);
+				if (train.is_spawned) {
+                    if (!train.collisionP1) {
+						if (p1.collision_train(&p1, train, board, p1currentTime))train.collisionP1 = true; // 플레이어 1과 충돌한 경우
+                    }
+				}
+				if (train.is_spawned) {
+                    if (!train.collisionP2) {
+						if (p2.collision_train(&p2, train, board, p2currentTime))train.collisionP2 = true; // 플레이어 2와 충돌한 경우
+                    }
+				}
+			
+			
+				
                 p1Time++;
                 p2Time++;
                 if (p1Time >= 50) {
@@ -227,11 +258,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					game_winner = 1; // 플레이어 1 승리
 				}
             }
-            if (move_train(train)) {
-                make_item(train, board);
-				
-            }
-			move_item(train, board);
+           
+            
         }
             break;
         case 2:
@@ -367,6 +395,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				init_train(train);
                 p1currentTime = 30;
 				p2currentTime = 30;
+                int hueFilterMin = 0;   // 원하는 색 필터 범위
+                int hueFilterMax = 360;
+                HBITMAP original = ResourceManager::GetBitmap(BitmapID::Player1Moving);
+
+                HBITMAP recolored = AdjustBitmapHueWithFilter(original, p1.GetColor(), hueFilterMin, 20);
+                ResourceManager::SetBitmap(BitmapID::Player1Moving, recolored);
+
+                original = ResourceManager::GetBitmap(BitmapID::Player2Moving);
+                recolored = AdjustBitmapHueWithFilter(original, p2.GetColor(), hueFilterMin, 20);
+                ResourceManager::SetBitmap(BitmapID::Player2Moving, recolored);
+                p2.SetPlayerNum(2);
                 SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
                 SetTimer(hWnd, 2, 50, NULL);
             }
@@ -436,7 +475,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             p2_check_color_pos = 270;
             p1Applebox = 0;
             p2Applebox = 0;
-        }
+            for (int i = 0;i < 3;++i) {
+				p1_current_item[i] = 0;
+				p2_current_item[i] = 0;
+            }
+            //캐릭터 색상 원래대로 복구
+			HBITMAP original = ResourceManager::GetBitmap(BitmapID::Player1Moving);
+			DeleteObject(original);
+			original = ResourceManager::GetBitmap(BitmapID::Player2Moving);
+			DeleteObject(original);
+			ResourceManager::SetBitmap(BitmapID::Player1Moving, LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER)));
+			ResourceManager::SetBitmap(BitmapID::Player2Moving, LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_PLAYER)));
+
+			p1.SetColor(0);
+			p2.SetColor(0);
+			p1.SetCurrentApple(0);
+			p2.SetCurrentApple(0);
+			p1currentTime = 100;
+			p2currentTime = 100;
+			p1CurrentHeart = 0;
+			p2CurrentHeart = 0;
+			p1.SetPlayerNum(1);
+			p2.SetPlayerNum(2);
+
+            }
+			
         }
         break;
     case WM_PAINT: {
@@ -512,7 +575,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					DeleteDC(p1DC);
 					DeleteDC(p2DC);
 					DeleteObject(pmask);
+                    //플레이어 아이템 출력
+					HBITMAP ItemPowerBitmap = ResourceManager::GetBitmap(BitmapID::ItemPower);
+					HBITMAP ItemBombCountBitmap = ResourceManager::GetBitmap(BitmapID::ItemBombCount);
+					HBITMAP ItemSpeedBitmap = ResourceManager::GetBitmap(BitmapID::ItemSpeed);
+					HDC ItemPowerDC = CreateCompatibleDC(mem);
+					HDC ItemBombCountDC = CreateCompatibleDC(mem);
+					HDC ItemSpeedDC = CreateCompatibleDC(mem);
+					HBITMAP oldItemPowerBitmap = (HBITMAP)SelectObject(ItemPowerDC, ItemPowerBitmap);
+					HBITMAP oldItemBombCountBitmap = (HBITMAP)SelectObject(ItemBombCountDC, ItemBombCountBitmap);
+                    HBITMAP oldItemSpeedBitmap = (HBITMAP)SelectObject(ItemSpeedDC, ItemSpeedBitmap);
+					TransparentBlt(mem, 50, 700, 40, 40, ItemPowerDC, 0, 0, 38, 38, RGB(255, 0, 255));
+					TransparentBlt(mem, 1200, 700, 40, 40, ItemPowerDC, 0, 0, 38, 38, RGB(255, 0, 255));
+					TransparentBlt(mem, 50, 740, 40, 40, ItemBombCountDC, 0, 0, 38, 38, RGB(255, 0, 255));
+					TransparentBlt(mem, 1200, 740, 40, 40, ItemBombCountDC, 0, 0, 38, 38, RGB(255, 0, 255));
+					TransparentBlt(mem, 50, 780, 40, 40, ItemSpeedDC, 0, 0, 38, 38, RGB(255, 0, 255));
+					TransparentBlt(mem, 1200, 780, 40, 40, ItemSpeedDC, 0, 0, 38, 38, RGB(255, 0, 255));
+					//플레이어 아이템 개수 출력
+					DrawOutlinedText(mem, 100, 700, std::to_wstring(p1_current_item[0]).c_str());
+					DrawOutlinedText(mem, 1250, 700, std::to_wstring(p2_current_item[0]).c_str());
+					DrawOutlinedText(mem, 100, 740, std::to_wstring(p1_current_item[1]).c_str());
+					DrawOutlinedText(mem, 1250, 740, std::to_wstring(p2_current_item[1]).c_str());
+					DrawOutlinedText(mem, 100, 780, std::to_wstring(p1_current_item[2]).c_str());
+					DrawOutlinedText(mem, 1250, 780, std::to_wstring(p2_current_item[2]).c_str());
 
+					SelectObject(ItemPowerDC, oldItemPowerBitmap);
+					SelectObject(ItemBombCountDC, oldItemBombCountBitmap);
+					SelectObject(ItemSpeedDC, oldItemSpeedBitmap);
+					DeleteDC(ItemPowerDC);
+					DeleteDC(ItemBombCountDC);
+					DeleteDC(ItemSpeedDC);
                     if (selected_stage == 1) {
                         draw_tile_forest(mem);
                         draw_Bomb(mem, g_hInst, p1bombs.data(), static_cast<int>(p1bombs.size()), board, &p1);
@@ -563,13 +655,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 						DrawGrid_City(mem, g_hInst, board, &p1, &p2,train);
 
                         //플레이어 시간 출력
+						HBITMAP timeBitmap = ResourceManager::GetBitmap(BitmapID::CityClock);
+						HDC timeDC = CreateCompatibleDC(mem);
+						HBITMAP oldTimeBitmap = (HBITMAP)SelectObject(timeDC, timeBitmap);
+						TransparentBlt(mem, 100, 250, 40, 46, timeDC, 0, 0, 40, 46, RGB(255, 0, 255));
+						TransparentBlt(mem, 1255, 250, 40, 46, timeDC, 0, 0, 40, 46, RGB(255, 0, 255));
 						wchar_t p1Time[3];
                         swprintf(p1Time, 3, L"%d", p1currentTime);
-						DrawOutlinedText(mem, 215, 250, p1Time);
+						DrawOutlinedText(mem, 155, 250, p1Time);
 						wchar_t p2Time[3];
 						swprintf(p2Time, 3, L"%d", p2currentTime);
-						DrawOutlinedText(mem, 1370, 250, p2Time);
-						
+						DrawOutlinedText(mem, 1310, 250, p2Time);
+						SelectObject(timeDC, oldTimeBitmap);
+						DeleteDC(timeDC);
 
 					}
 					else if (selected_stage == 3) {
@@ -597,7 +695,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					}
                     //화면 프레임 출력
                     std::wstring fpsText = L"FPS: " + std::to_wstring(currentFPS);
-                    DrawOutlinedText(mem, 10, 10, fpsText.c_str());  // 
+                    DrawOutlinedText(mem, 10, 10, fpsText.c_str());  
+
+					
+					
 				}
             
             
