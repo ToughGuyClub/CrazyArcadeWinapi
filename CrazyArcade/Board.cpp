@@ -163,7 +163,9 @@ void init_board_Ice(Board board[MAP_TILES][MAP_TILES])
         }
     }
     board[5][6].obstacle = 0;
+	board[5][6].item = 0; // 중앙에 있는 장애물 제거
 	board[5][13].obstacle = 0;
+	board[5][13].item = 0; // 중앙에 있는 장애물 제거
 }
 
 void draw_tile_forest(HDC hdc)

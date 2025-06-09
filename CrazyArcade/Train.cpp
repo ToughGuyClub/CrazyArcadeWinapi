@@ -12,7 +12,7 @@ void init_train(Train& train) {
 	train.speed = 5; // 기차 속도
 	train.spawnTime = 0; // 기차 생성 시간
 	train.spawnInterval = 1000; // 기차 생성 간격 (10초)
-	train.is_spawned = true; // 기차가 생성되었는지 여부
+	train.is_spawned = false; // 기차가 생성되었는지 여부
 }
 int move_train(Train& train) {
 	if (train.is_spawned) {
@@ -24,6 +24,8 @@ int move_train(Train& train) {
 			train.Pos.left = -690;
 			train.Pos.right = train.Pos.left + 1029; // 기차 폭
 			train.is_spawned = false; // 기차가 다시 생성되지 않도록 설정
+			train.collisionP1 = false; // 충돌 상태 초기화
+			train.collisionP2 = false; // 충돌 상태 초기화
 		}
 		if (train.Pos.left == 200) {
 			return 1;

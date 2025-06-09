@@ -19,6 +19,7 @@ class Player {
     int move_cnt;
     int color;
     int player_num;
+    bool is_hit;
     HBITMAP hSprite;
 public:
     Player();
@@ -50,6 +51,7 @@ public:
 	int GetColor() const { return color; }
 	int GetMoveCount() const { return move_cnt; }
 	int GetPlayerNum() const { return player_num; }
+	bool GetIsHit() const { return is_hit; }
     // Setter
     void SetX(int value) { x = value; }
     void SetY(int value) { y = value; }
@@ -66,6 +68,7 @@ public:
 	void SetColor(int value) { color = value; }
 	void SetMoveCount(int value) { move_cnt = value; }
 	void SetPlayerNum(int value) { player_num = value; }
+	void SetIsHit(bool value) { is_hit = value; }
     // 위치 비교
     bool IsStopped() const { return (px == x && py == y); }
     bool IsMoving() const { return (px != destX || py != destY); }

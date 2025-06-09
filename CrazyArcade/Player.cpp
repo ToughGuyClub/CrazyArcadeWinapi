@@ -30,8 +30,8 @@ void Player::Init_Player(POINT pos)
     this->dir = DIR_DOWN;
 
     //폭탄 사거리 초기화
-    this->bomb_distance = 3;
-    this->maxBomb = 3;
+    this->SetBomb_distance(1);
+    this->maxBomb = 2;
     this->currrentApple = 0;
 
     //선택 캐릭터 초기화
@@ -39,6 +39,8 @@ void Player::Init_Player(POINT pos)
    
 	this->move_cnt = 0;
     this->player_num = 1;
+
+    this->is_hit = false;
     // 스프라이트 핸들 초기화
     this->hSprite = NULL;
 }
@@ -46,6 +48,7 @@ void Player::Init_Player(POINT pos)
 
 void Player::Draw_Player(HDC hdc, Player* p, int character)
 {
+    if (p->GetIsHit()&& GetTickCount()%2==1)return;
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES;
     int ox = (WINDOW_WIDTH - mapSize) / 2;
@@ -148,7 +151,8 @@ int Player::collision_train(Player* player, Train& train, Board board[MAP_TILES]
     if (train.is_spawned) {
         if (px >= train.Pos.left && px <= train.Pos.right) {
             if (py >= train.Pos.top && py <= train.Pos.bottom) {
-                Pcurrenttime -= 2;
+                Pcurrenttime -= 5;
+				player->SetIsHit(true);
                 return 1;
             }
 
@@ -204,6 +208,8 @@ void UpdatePlayerPosition(Player& player, float speed) {
 
         if (!player.IsMoving()) player.SnapToDest();
         
+        
+       
         player.SetMoveCount((player.GetMoveCount() + 1) % 16);
         
     }

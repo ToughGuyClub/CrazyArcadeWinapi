@@ -16,6 +16,7 @@ void Bomb::make_Bomb(Player player, Board board[MAP_TILES][MAP_TILES])
     this->isCollisionUp = false;
     this->isCollisionDown = false;
     this->is_collision_player = false;
+    board[(int)player.GetY()][(int)player.GetX()].obstacle = 9;
 }
 
 bool Bomb::tick_Bomb()
@@ -23,8 +24,8 @@ bool Bomb::tick_Bomb()
 		this->time--;
 	else if (this->time <= 0&&this->state==1) {
 		this->state = 2;
-		this->time = 20;
-      
+		this->time = 10;
+        PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Bubble.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	}
 	else if (this->time <= 0 && this->state == 2) {
 	this->state = 0;
@@ -133,7 +134,7 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
                 int nx = logicX - j - 1;
                 if (nx < 0) break;  // 바깥으로 나가지 않도록!
 
-                if (board[logicY][nx].obstacle == 0) {
+                if (board[logicY][nx].obstacle == 0|| board[logicY][nx].obstacle==9) {
                     TransparentBlt(
                         hDC, x - 3 * MAP_TILES - MAP_TILES * (2 * j),y-MAP_TILES , drawSize, drawSize,
                         memDC, 52 * currentFrame, 0, 52, 52,
@@ -177,7 +178,7 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
                 int nx = logicX + j + 1;
                 if (nx >= MAP_TILES) break;  // 바깥으로 나가지 않도록!
 
-                if (board[logicY][nx].obstacle == 0) {
+                if (board[logicY][nx].obstacle == 0|| board[logicY][nx].obstacle==9) {
                     TransparentBlt(
                         hDC, x + MAP_TILES + MAP_TILES * (2 * j), y - MAP_TILES, drawSize, drawSize,
                         memDC, 52 * currentFrame, 0, 52, 52,
@@ -217,7 +218,7 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
                 int ny = logicY - j - 1;
                 if (ny <0) break;  // 바깥으로 나가지 않도록!
 
-                if (board[ny][logicX].obstacle == 0) {
+                if (board[ny][logicX].obstacle == 0|| board[ny][logicX].obstacle==9) {
                     TransparentBlt(
                         hDC, x - MAP_TILES, y - 3*MAP_TILES - MAP_TILES * (2 * j), drawSize, drawSize,
                         memDC, 52 * currentFrame, 0, 52, 52,
@@ -257,7 +258,7 @@ void draw_Bomb(HDC hDC,HINSTANCE g_hInst,Bomb bombs[], int n, Board board[MAP_TI
                     int ny = logicY + j+1;
                     if (ny >= MAP_TILES) break;  // 바깥으로 나가지 않도록!
 
-                    if (board[ny][logicX].obstacle == 0) {
+                    if (board[ny][logicX].obstacle == 0|| board[ny][logicX].obstacle==9) {
                         TransparentBlt(
                             hDC, x - MAP_TILES, y + MAP_TILES+ MAP_TILES * (2 * j), drawSize, drawSize,
                             memDC, 52 * currentFrame, 0, 52, 52,
