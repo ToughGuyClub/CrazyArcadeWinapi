@@ -106,7 +106,7 @@ void Player::on_applebox(Player* player, int* applebox, int boxX, int boxY)
     {
         if (player->GetCurrentApple() > 0) {
         
-            (*applebox) = player->GetCurrentApple();;                // 박스 수 증가
+            (*applebox) += player->GetCurrentApple();;                // 박스 수 증가
             player->SetCurrentApple(0);
         }
     }

@@ -153,7 +153,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         newBomb.make_Bomb(p1, board);
 
                         p1bombs.push_back(newBomb);
-
+                        PlaySound(NULL, NULL, NULL);
                         PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Ballon.wav"), NULL, SND_ASYNC);
                     }
                 }
@@ -163,7 +163,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         newBomb.make_Bomb(p1, board);
 
                         p1bombs.push_back(newBomb);
-
+                        PlaySound(NULL, NULL, NULL);
                         PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Ballon.wav"), NULL, SND_ASYNC);
                     }
                 }
@@ -176,7 +176,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         newBomb.make_Bomb(p2, board);
 
                         p2bombs.push_back(newBomb);
-
+                        PlaySound(NULL, NULL, NULL);
                         PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Ballon.wav"), NULL, SND_ASYNC);
                     }
                 }
@@ -185,7 +185,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 						Bomb newBomb;
 						newBomb.make_Bomb(p2, board);
 						p2bombs.push_back(newBomb);
-
+                        PlaySound(NULL, NULL, NULL);
                         PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Ballon.wav"), NULL, SND_ASYNC);
 					}
 				}
@@ -240,6 +240,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 temp=p1.collision_item(&p1, board, p1currentTime)-1;
 				if (temp >= 0 && temp < 3) { // 아이템이 유효한 범위 내에 있는지 확인
 					p1_current_item[temp]++; // 아이템 개수 증가
+                    PlaySound(NULL, NULL, NULL);
                     PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Acting.wav"), NULL, SND_ASYNC);
 				}
 				
@@ -247,6 +248,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			
                if (temp >= 0 && temp < 3) { // 아이템이 유효한 범위 내에 있는지 확인
 				   p2_current_item[temp]++; // 아이템 개수 증가
+                   PlaySound(NULL, NULL, NULL);
                    PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Acting.wav"), NULL, SND_ASYNC);
                }
             }
@@ -266,14 +268,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 move_item(train, board);
 				if (train.is_spawned) {
                     if (!train.collisionP1) {
-						if (p1.collision_train(&p1, train, board, p1currentTime))train.collisionP1 = true; // 플레이어 1과 충돌한 경우
-                        PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                        if (p1.collision_train(&p1, train, board, p1currentTime)) {
+                            train.collisionP1 = true; // 플레이어 1과 충돌한 경우
+                            PlaySound(NULL, NULL, NULL);
+                            PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                        }
                     }
 				}
 				if (train.is_spawned) {
                     if (!train.collisionP2) {
-						if (p2.collision_train(&p2, train, board, p2currentTime))train.collisionP2 = true; // 플레이어 2와 충돌한 경우
-                        PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                        if (p2.collision_train(&p2, train, board, p2currentTime)) {
+                            train.collisionP2 = true; // 플레이어 2와 충돌한 경우
+                            PlaySound(NULL, NULL, NULL);
+                            PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                        }
                     }
 				}
 			
@@ -295,12 +303,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					game_winner = 2; // 플레이어 2 승리
 					KillTimer(hWnd, 1); // 타이머 중지
 					KillTimer(hWnd, 2); // 타이머 중지
+                    PlaySound(NULL, NULL, NULL);
+                    PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
 				}
 				else if (p2currentTime <= 0) {
 					game_end = true;
 					game_winner = 1; // 플레이어 1 승리
                     KillTimer(hWnd, 1); // 타이머 중지
                     KillTimer(hWnd, 2); // 타이머 중지
+                    PlaySound(NULL, NULL, NULL);
+                    PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
 				}
             }
            
@@ -330,8 +342,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             for (int i = 0;i < p1bombs.size();++i) {
 				if (!p1bombs.data()[i].GetIsCollisionPlayer()&&p1bombs.data()[i].GetState() == 2) {
                     if (p1bombs.data()[i].collision_bomb_player(p1bombs.data()[i], p2)) {
+                        if (p2.GetIsHit() == false) {
+                            PlaySound(NULL, NULL, NULL);
+                            PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                        }
 						p2.SetIsHit(true); // 플레이어 2가 폭탄에 맞음
-                        PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                       
                         if (selected_stage == 1) {
 							//스테이지 1 충돌 처리
                             if (p2.GetCurrentApple() > 0) {
@@ -347,6 +363,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 							if (p2currentTime <= 0) {
 								game_end = true;
 								game_winner = 1; // 플레이어 1 승리
+                                PlaySound(NULL, NULL, NULL);
+                                PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
 							}
                             p1bombs.data()[i].SetIsCollisionPlayer(true);
                         }
@@ -357,6 +375,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 							if (p2CurrentHeart <= 0) {
 								game_end = true;
 								game_winner = 1; // 플레이어 1 승리
+                                PlaySound(NULL, NULL, NULL);
+                                PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
 							}
                         }
                     }
@@ -368,8 +388,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     if (!p2bombs.data()[i].GetIsCollisionPlayer() && p2bombs.data()[i].GetState() == 2) {
 						
                         if (p2bombs.data()[i].collision_bomb_player(p2bombs.data()[i], p1)) {
+                            if (p1.GetIsHit() == false) {
+                                PlaySound(NULL, NULL, NULL);
+                                PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                            }
                             p1.SetIsHit(true); // 플레이어 1이 폭탄에 맞음
-                            PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Die.wav"), NULL, SND_ASYNC);
+                            
                             //스테이지 별 충돌 처리
                             if (selected_stage == 1) {
                                 //스테이지 1 충돌 처리
@@ -385,6 +409,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 								if (p1currentTime <= 0) {
 									game_end = true;
 									game_winner = 2; // 플레이어 2 승리
+                                    PlaySound(NULL, NULL, NULL);
+                                    PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
 								}
                                 p2bombs.data()[i].SetIsCollisionPlayer(true);
 							}
@@ -395,6 +421,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 								if (p1CurrentHeart <= 0) {
 									game_end = true;
 									game_winner = 2; // 플레이어 2 승리
+                                    PlaySound(NULL, NULL, NULL);
+                                    PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
 								}
 							}
                         }
@@ -552,6 +580,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			
             if (wParam == 'r' && game_end) {
             //게임 리셋
+				PlaySound(NULL, NULL, NULL);
+                PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Login.wav"), NULL, SND_LOOP | SND_ASYNC);
             if (selected_stage == 1) {
                 p1.Init_Player({ 8, 18 });
                 p1.Init_Player({ 11, 18 });
@@ -802,7 +832,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
            
             if (game_end) {
-                PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Win.wav"), NULL, SND_ASYNC);
+				
                 DrawDarkOverlay(mem, 1500, 900);
                 HBITMAP gameEndBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_END));
                 HDC gameEndDC = CreateCompatibleDC(mem);
