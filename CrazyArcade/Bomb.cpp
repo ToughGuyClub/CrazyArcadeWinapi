@@ -1,3 +1,4 @@
+#include "AudioManager.h"
 #include"Bomb.h"
 #include "ResourceManager.h"
 void Bomb::make_Bomb(Player player, Board board[MAP_TILES][MAP_TILES])
@@ -25,7 +26,7 @@ bool Bomb::tick_Bomb()
 	else if (this->time <= 0&&this->state==1) {
 		this->state = 2;
 		this->time = 10;
-        PlaySound(TEXT("..\\..\\CrazyArcade\\Resource\\Sound\\Bubble.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        Audio::PlayEffect("Bubble.wav");
 	}
 	else if (this->time <= 0 && this->state == 2) {
 	this->state = 0;
