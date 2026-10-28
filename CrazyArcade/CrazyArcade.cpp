@@ -1,4 +1,5 @@
 ﻿#include "AudioManager.h"
+#include <map>
 #include"pch.h"
 #include"Train.h"
 #include"Bomb.h"
@@ -9,16 +10,47 @@
 HINSTANCE g_hInst;
 LPCTSTR lpszClass = L"Window Class Name";
 LPCTSTR lpszWindowName = L"CrazyArcade";
+namespace {
+    std::map<int, HBITMAP> uiBitmaps;
+    HDC backDC = nullptr;
+    HBITMAP backBitmap = nullptr;
+    HGDIOBJ oldBackBitmap = nullptr;
+    HFONT textFont = nullptr;
+    HPEN textPen = nullptr;
+    HBRUSH textBrush = nullptr;
+
+    HBITMAP CachedUI(int id) {
+        auto it = uiBitmaps.find(id);
+        if (it != uiBitmaps.end()) return it->second;
+        HBITMAP bitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(id));
+        if (bitmap) uiBitmaps[id] = bitmap;
+        return bitmap;
+    }
+
+    void ReleaseDrawingResources() {
+        if (backDC) SelectObject(backDC, oldBackBitmap);
+        if (backBitmap) DeleteObject(backBitmap);
+        if (backDC) DeleteDC(backDC);
+        backDC = nullptr;
+        backBitmap = nullptr;
+        for (auto& entry : uiBitmaps) DeleteObject(entry.second);
+        uiBitmaps.clear();
+        if (textFont) DeleteObject(textFont);
+        if (textPen) DeleteObject(textPen);
+        if (textBrush) DeleteObject(textBrush);
+        textFont = nullptr; textPen = nullptr; textBrush = nullptr;
+    }
+}
 void DrawOutlinedText(HDC hdc, int x, int y, const wchar_t* text) {
     // 폰트 생성 (크고 두꺼운 글씨)
-    HFONT hFont = CreateFont(
+    if (!textFont) textFont = CreateFont(
         48, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
         ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
         L"맑은 고딕"
     );
 
-    HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
+    HFONT oldFont = (HFONT)SelectObject(hdc, textFont);
 
     // 배경 투명하게 설정
     SetBkMode(hdc, TRANSPARENT);
@@ -29,22 +61,22 @@ void DrawOutlinedText(HDC hdc, int x, int y, const wchar_t* text) {
     EndPath(hdc);
 
     // 외곽선 색
-    HPEN hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
-    HPEN oldPen = (HPEN)SelectObject(hdc, hPen);
+    if (!textPen) textPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+    HPEN oldPen = (HPEN)SelectObject(hdc, textPen);
 
     // 안쪽 채우기 색
-    HBRUSH hBrush = CreateSolidBrush(RGB(255, 165, 0));
-    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+    if (!textBrush) textBrush = CreateSolidBrush(RGB(255, 165, 0));
+    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, textBrush);
 
     StrokeAndFillPath(hdc);
 
     // 정리
     SelectObject(hdc, oldBrush);
-    DeleteObject(hBrush);
+
     SelectObject(hdc, oldPen);
-    DeleteObject(hPen);
+
     SelectObject(hdc, oldFont);
-    DeleteObject(hFont);
+
 }
 
 static int frameCount = 0;
@@ -105,6 +137,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static Player p1, p2;
     static Board board[MAP_TILES][MAP_TILES];
     static int selected_stage = 0;
+    static LARGE_INTEGER clockFrequency = {}, previousClock = {};
+    static double simulationMs = 0, nextMovementMs = 12, nextBombMs = 50;
+    static bool resetClock = true;
     static std::vector<Bomb> p1bombs;
     static std::vector<Bomb> p2bombs;
 	static bool game_started = false;
@@ -134,6 +169,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     switch (msg) {
     case WM_CREATE:
+        QueryPerformanceFrequency(&clockFrequency);
+        QueryPerformanceCounter(&previousClock);
+        for (int id : {IDB_BITMAP_GAME_LOGIN, IDB_BITMAP_SELECT_STAGE,
+            IDB_BITMAP_P1_CHECK, IDB_BITMAP_P2_CHECK, IDB_BITMAP_GAMEUI, IDB_BITMAP_GAME_END}) CachedUI(id);
         if (!Audio::Initialize())
             MessageBoxW(hWnd, L"FMOD audio initialization failed.", L"Audio", MB_OK | MB_ICONWARNING);
         SetTimer(hWnd, 100, 16, NULL);
@@ -224,8 +263,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         if (wParam < 256) keyStates[wParam] = false;
         break;
     case WM_TIMER: {
-        if (wParam == 100) { Audio::Update(); return 0; }
-        switch (wParam) {
+        if (wParam != 100) return 0;
+        Audio::Update();
+        LARGE_INTEGER now;
+        QueryPerformanceCounter(&now);
+        double elapsedMs = 1000.0 * (now.QuadPart - previousClock.QuadPart) / clockFrequency.QuadPart;
+        previousClock = now;
+        if (resetClock || !selected_stage || game_end || IsIconic(hWnd)) {
+            simulationMs = 0; nextMovementMs = 12; nextBombMs = 50;
+            resetClock = false;
+            return 0;
+        }
+        // Accumulate real elapsed time, then run fixed simulation steps.
+        // Cap long stalls (window dragging/debugger) to avoid a catch-up freeze.
+        simulationMs += (elapsedMs < 250.0 ? elapsedMs : 250.0);
+        auto simulate = [&](int step) {
+        switch (step) {
         case 1: {
             
             if (selected_stage) {
@@ -248,14 +301,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				   p2_current_item[temp]++; // 아이템 개수 증가
                    Audio::PlayEffect("Acting.wav");
                }
-            }
-            frameCount++;
-
-            DWORD currentTime = GetTickCount();
-            if (currentTime - lastTime >= 1000) { // 1초 지남
-                currentFPS = frameCount;
-                frameCount = 0;
-                lastTime = currentTime;
             }
             if (selected_stage == 2) {
                 if (move_train(train)) {
@@ -282,29 +327,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			
 			
 				
-                p1Time++;
-                p2Time++;
-                if (p1Time >= 50) {
-                    p1Time = 0;
+                p1Time += 12;
+                p2Time += 12;
+                if (p1Time >= 1000) {
+                    p1Time -= 1000;
                     p1currentTime--;
                 }
-                if (p2Time >= 50) {
-                    p2Time = 0;
+                if (p2Time >= 1000) {
+                    p2Time -= 1000;
                     p2currentTime--;
                 }
 
 				if (p1currentTime <= 0) {
 					game_end = true;
 					game_winner = 2; // 플레이어 2 승리
-					KillTimer(hWnd, 1); // 타이머 중지
-					KillTimer(hWnd, 2); // 타이머 중지
+
+
                     Audio::StopMusic(); Audio::PlayEffect("Win.wav");
 				}
 				else if (p2currentTime <= 0) {
 					game_end = true;
 					game_winner = 1; // 플레이어 1 승리
-                    KillTimer(hWnd, 1); // 타이머 중지
-                    KillTimer(hWnd, 2); // 타이머 중지
+
+
                     Audio::StopMusic(); Audio::PlayEffect("Win.wav");
 				}
             }
@@ -312,7 +357,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             
         }
             break;
-        case 2:
+        case 2: {
+            auto advanceBombs = [&](std::vector<Bomb>& bombs, Player& owner) {
+                for (size_t i = 0; i < bombs.size();) {
+                    int previousState = bombs[i].GetState();
+                    if (bombs[i].tick_Bomb()) { bombs.erase(bombs.begin() + i); continue; }
+                    if (previousState == 1 && bombs[i].GetState() == 2)
+                        bombs[i].ResolveExplosion(board, owner);
+                    ++i;
+                }
+            };
+            advanceBombs(p1bombs, p1);
+            advanceBombs(p2bombs, p2);
            
         {//충돌 시 깜빡이는거 구현하려고 필요한거
             if (p1.GetIsHit()) {
@@ -417,32 +473,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 }
             
             
-            for (int i = 0;i < p1bombs.size();++i) {
-                if (p1bombs.data()[i].GetState() == 2) {
-                    board[p1bombs.data()[i].GetLogicalX()][p1bombs.data()[i].GetLogicalY()].obstacle = 0; // 폭탄이 터지면 해당 위치의 장애물 제거
-
-                }
-                if (p1bombs.data()[i].tick_Bomb()) {
-                     
-                     p1bombs.erase(p1bombs.begin() + i);
-                 }
-            }
-            for (int i = 0;i < p2bombs.size();++i) {
-                if (p2bombs.data()[i].GetState() == 2) {
-                    board[p2bombs.data()[i].GetLogicalX()][p2bombs.data()[i].GetLogicalY()].obstacle = 0; // 폭탄이 터지면 해당 위치의 장애물 제거
-
-                     }
-				if (p2bombs.data()[i].tick_Bomb()) {
-                   
-                    p2bombs.erase(p2bombs.begin() + i);
-                }
-            }
-          
             break;
             }
-   
+            }
+        };
+        while (!game_end) {
+            double next = nextMovementMs < nextBombMs ? nextMovementMs : nextBombMs;
+            if (next > simulationMs) break;
+            if (nextMovementMs <= nextBombMs) {
+                simulate(1); nextMovementMs += 12;
+            } else {
+                simulate(2); nextBombMs += 50;
+            }
+        }
         InvalidateRect(hWnd, NULL, FALSE);
-        break;
+        return 0;
     }
     case WM_LBUTTONDOWN: {
 		int pos_x = LOWORD(lParam);
@@ -451,7 +496,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             game_started = true;
         }
         else if (!game_started &&pos_x > 800) {
-            PostQuitMessage(0);
+            DestroyWindow(hWnd);
         }
         InvalidateRect(hWnd, NULL, FALSE);
         break;
@@ -461,6 +506,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         if (selected_stage == 0) {
             if (wParam == '1') {
                 selected_stage = 1;
+                resetClock = true;
                 Audio::StopMusic(); Audio::PlayEffect("GameStart.wav");
                 
                 POINT p1_start_point = { 8,18 };
@@ -481,15 +527,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 p2.Init_Player(p2_start_point);
                 p2.SetPlayerNum(2);
                 init_board_Forest(board);
-               
-                SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
-                SetTimer(hWnd, 2, 50, NULL);
+
+
               
               
             }
             else  if (wParam == '2') {
                 Audio::StopMusic(); Audio::PlayEffect("GameStart.wav");
                 selected_stage = 2;
+                resetClock = true;
                 POINT p1_start_point = { 8,5 };
                 POINT p2_start_point = { 11,14 };
 				init_board_City(board);
@@ -509,12 +555,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 recolored = AdjustBitmapHueWithFilter(original, p2.GetColor(), hueFilterMin, 20);
                 ResourceManager::SetBitmap(BitmapID::Player2Moving, recolored);
                 p2.SetPlayerNum(2);
-                SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
-                SetTimer(hWnd, 2, 50, NULL);
+
+
             }
             else  if (wParam == '3') {
                 Audio::StopMusic(); Audio::PlayEffect("GameStart.wav");
                 selected_stage = 3;
+                resetClock = true;
                 POINT p1_start_point = { 6,5 };
                 POINT p2_start_point = { 13,5 };
                 int hueFilterMin = 0;   // 원하는 색 필터 범위
@@ -535,8 +582,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				p2CurrentHeart = 3;
                 p2.SetPlayerNum(2);
                 init_board_Ice(board);
-                SetTimer(hWnd, TIMER_ID, TIMER_INTERVAL, NULL);
-                SetTimer(hWnd, 2, 50, NULL);
+
+
             }
             else if (wParam == 'a') {
              if (game_started) {
@@ -571,8 +618,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 p2Applebox = 0;
             }
             selected_stage = 0;
-            p1bombs;
-            p2bombs;
+            resetClock = true;
+            p1Time = p2Time = p1_hit_cnt = p2_hit_cnt = 0;
+
             game_started = false;
             game_end = false;
             game_winner = 0;
@@ -609,81 +657,84 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
 			
         }
+        InvalidateRect(hWnd, NULL, FALSE);
         break;
     case WM_PAINT: {
       
             hdc = BeginPaint(hWnd, &ps);
-            HDC mem = CreateCompatibleDC(hdc);
-            HBITMAP bmp = CreateCompatibleBitmap(hdc, 1500, 900);
-            HGDIOBJ oldBmp = SelectObject(mem, bmp);
-            RECT rc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };
+            if (!backDC) {
+                backDC = CreateCompatibleDC(hdc);
+                backBitmap = CreateCompatibleBitmap(hdc, 1500, 900);
+                oldBackBitmap = SelectObject(backDC, backBitmap);
+            }
+            HDC mem = backDC;
+            RECT rc = { 0,0,1500,900 };
             FillRect(mem, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
             if (!game_started) {
                 
 				// 게임이 시작되지 않은 상태에서의 처리
-				HBITMAP loginBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_LOGIN));
+				HBITMAP loginBitmap = CachedUI(IDB_BITMAP_GAME_LOGIN);
 				HDC loginDC = CreateCompatibleDC(mem);
 				HBITMAP oldLoginBitmap = (HBITMAP)SelectObject(loginDC, loginBitmap);
 				StretchBlt(mem, 0, 0, 1500, 900, loginDC, 0, 0, 800, 600, SRCCOPY);
 				SelectObject(loginDC, oldLoginBitmap);
-				DeleteObject(loginBitmap);
+
 				DeleteDC(loginDC);
 			
             }
             else if (game_started) {
 				// 게임이 시작된 상태에서의 처리
                 if (selected_stage == 0) {
-					HBITMAP selectStageBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_SELECT_STAGE));
+					HBITMAP selectStageBitmap = CachedUI(IDB_BITMAP_SELECT_STAGE);
 					HDC selectStageDC = CreateCompatibleDC(mem);
 					HBITMAP oldSelectStageBitmap = (HBITMAP)SelectObject(selectStageDC, selectStageBitmap);
 					StretchBlt(mem, 0, 0, 1500, 900, selectStageDC, 0, 0, 1500, 900, SRCCOPY);
 					SelectObject(selectStageDC, oldSelectStageBitmap);
-					DeleteObject(selectStageBitmap);
+
 
                     //체크표시 그리기
-					HBITMAP p1CheckBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_P1_CHECK));
+					HBITMAP p1CheckBitmap = CachedUI(IDB_BITMAP_P1_CHECK);
 					HDC p1CheckDC = CreateCompatibleDC(mem);
 					HBITMAP oldP1CheckBitmap = (HBITMAP)SelectObject(p1CheckDC, p1CheckBitmap);
                     TransparentBlt(mem, p1_check_color_pos, 670, 100, 50, p1CheckDC, 0, 0, 224, 150, RGB(255,0,255));
-					HBITMAP p2CheckBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_P2_CHECK));
+					HBITMAP p2CheckBitmap = CachedUI(IDB_BITMAP_P2_CHECK);
 					HDC p2CheckDC = CreateCompatibleDC(mem);
 					HBITMAP oldP2CheckBitmap = (HBITMAP)SelectObject(p2CheckDC, p2CheckBitmap);
                     TransparentBlt(mem, p2_check_color_pos, 640, 100, 50, p2CheckDC, 0, 0, 224, 150, RGB(255, 0, 255));
 
 					DeleteDC(selectStageDC);
-                    DeleteObject(p1CheckBitmap);
-					DeleteObject(p2CheckBitmap);
 
-					DeleteDC(p1CheckDC);
-					DeleteDC(p2CheckDC);
+
+
+					SelectObject(p1CheckDC, oldP1CheckBitmap);
+                    DeleteDC(p1CheckDC);
+					SelectObject(p2CheckDC, oldP2CheckBitmap);
+                    DeleteDC(p2CheckDC);
                 }
 				else if (selected_stage >= 1) {
                     //공통UI 출력
 
 					//게임 UI 출력
-                    HBITMAP gameui = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAMEUI));
+                    HBITMAP gameui = CachedUI(IDB_BITMAP_GAMEUI);
                     HDC uiDC = CreateCompatibleDC(mem);
                     HBITMAP oldUIBitmap = (HBITMAP)SelectObject(uiDC, gameui);
                     StretchBlt(mem, 0, 0, 1450, 900, uiDC, 0, 0, 1040, 780, SRCCOPY);
                     SelectObject(uiDC, oldUIBitmap);
-                    DeleteObject(gameui);
+
                     DeleteDC(uiDC);
 					HBITMAP p1bitmap = ResourceManager::GetBitmap(BitmapID::Player1Moving);
 					HBITMAP p2bitmap = ResourceManager::GetBitmap(BitmapID::Player2Moving);
-					HBITMAP pmask = ResourceManager::GetBitmap(BitmapID::PlayerMovingMask);
 					HDC p1DC = CreateCompatibleDC(mem);
 					HDC p2DC = CreateCompatibleDC(mem);
-					HBITMAP oldMaskBitmap = (HBITMAP)SelectObject(p1DC, pmask);
 					HBITMAP oldP1Bitmap = (HBITMAP)SelectObject(p1DC, p1bitmap);
 					HBITMAP oldP2Bitmap = (HBITMAP)SelectObject(p2DC, p2bitmap);
 					TransparentBlt(mem, 175, 150, 80, 50, p1DC, 0, 0, 50, 40, RGB(255, 0, 255));
 					TransparentBlt(mem, 1195, 150, 80, 50, p2DC, 0, 0, 50, 40, RGB(255, 0, 255));
-					SelectObject(p1DC, oldMaskBitmap);
 					SelectObject(p1DC, oldP1Bitmap);
 					SelectObject(p2DC, oldP2Bitmap);
 					DeleteDC(p1DC);
 					DeleteDC(p2DC);
-					DeleteObject(pmask);
+					// Shared bitmap is owned by ResourceManager.
                     //플레이어 아이템 출력
 					HBITMAP ItemPowerBitmap = ResourceManager::GetBitmap(BitmapID::ItemPower);
 					HBITMAP ItemBombCountBitmap = ResourceManager::GetBitmap(BitmapID::ItemBombCount);
@@ -769,11 +820,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 						HBITMAP oldTimeBitmap = (HBITMAP)SelectObject(timeDC, timeBitmap);
 						TransparentBlt(mem, 100, 250, 40, 46, timeDC, 0, 0, 40, 46, RGB(255, 0, 255));
 						TransparentBlt(mem, 1255, 250, 40, 46, timeDC, 0, 0, 40, 46, RGB(255, 0, 255));
-						wchar_t p1Time[3];
-                        swprintf(p1Time, 3, L"%d", p1currentTime);
+						wchar_t p1Time[16];
+                        swprintf(p1Time, 16, L"%d", p1currentTime);
 						DrawOutlinedText(mem, 155, 250, p1Time);
-						wchar_t p2Time[3];
-						swprintf(p2Time, 3, L"%d", p2currentTime);
+						wchar_t p2Time[16];
+						swprintf(p2Time, 16, L"%d", p2currentTime);
 						DrawOutlinedText(mem, 1310, 250, p2Time);
 						SelectObject(timeDC, oldTimeBitmap);
 						DeleteDC(timeDC);
@@ -816,7 +867,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             if (game_end) {
 				
                 DrawDarkOverlay(mem, 1500, 900);
-                HBITMAP gameEndBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_BITMAP_GAME_END));
+                HBITMAP gameEndBitmap = CachedUI(IDB_BITMAP_GAME_END);
                 HDC gameEndDC = CreateCompatibleDC(mem);
                 HBITMAP oldGameEndBitmap = (HBITMAP)SelectObject(gameEndDC, gameEndBitmap);
                 if (game_winner == 1) {
@@ -831,19 +882,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
               
                 DrawOutlinedText(mem, 500, 600,L"다시 시작하려면 R을 누르시오 .");  // 
                 SelectObject(gameEndDC, oldGameEndBitmap);
-                DeleteObject(gameEndBitmap);
+
                 DeleteDC(gameEndDC);
             }
             BitBlt(hdc, 0, 0, 1500, 900, mem, 0, 0, SRCCOPY);
-            SelectObject(mem, oldBmp);
-            DeleteObject(bmp);
-            
-            DeleteDC(mem);
+
             EndPaint(hWnd, &ps);
+            frameCount++;
+
+            DWORD currentTime = GetTickCount();
+            if (currentTime - lastTime >= 1000) { // 1초 지남
+                currentFPS = static_cast<int>(frameCount * 1000.0 / (currentTime - lastTime));
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
         
         return 0;
     }
     case WM_DESTROY:
+        ReleaseDrawingResources();
         KillTimer(hWnd, 100);
         Audio::Shutdown();
         KillTimer(hWnd, TIMER_ID);

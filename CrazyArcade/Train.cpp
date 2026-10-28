@@ -11,8 +11,9 @@ void init_train(Train& train) {
 	train.collisionP2 = false;
 	train.speed = 5; // 기차 속도
 	train.spawnTime = 0; // 기차 생성 시간
-	train.spawnInterval = 1000; // 기차 생성 간격 (10초)
+	train.spawnInterval = 10000; // 기차 생성 간격 (10초)
 	train.is_spawned = false; // 기차가 생성되었는지 여부
+    for (auto& item : train.item) item = {};
 }
 int move_train(Train& train) {
 	if (train.is_spawned) {
@@ -32,7 +33,7 @@ int move_train(Train& train) {
 		}
 	}
 	else {
-		train.spawnTime += 5;
+		train.spawnTime += 12;
 		if (train.spawnTime >= train.spawnInterval) {
 			train.is_spawned = true;
 			train.spawnTime = 0; // 리셋
@@ -63,26 +64,23 @@ void draw_train(HDC hdc, Train& train)
 
 void make_item(Train& train, Board board[MAP_TILES][MAP_TILES])
 {
-	if (train.is_spawned) {
-		for (int i = 0;i < 6;++i) {
-			int itemType = rand() % 4 + 1;
-			while (1) {
-				int posX = rand() % MAP_TILES;
-				int posY = rand() % MAP_TILES;
-				if (board[posY][posX].obstacle == 0 && board[posY][posX].item == 0) {
-					train.item[i].on_board_pos.x = posX;
-					train.item[i].on_board_pos.y = posY;
-					train.item[i].pos.x = train.Pos.right - train.Pos.left-250;
-					train.item[i].pos.y = train.Pos.bottom-40;
-					train.item[i].type = itemType;
-					train.item[i].is_active = true;
-					
-					break;
-				}
-			}
-		}
-	}
-	
+    if (!train.is_spawned) return;
+    std::vector<POINT> emptyCells;
+    for (int y = 0; y < MAP_TILES; ++y)
+        for (int x = 0; x < MAP_TILES; ++x)
+            if (board[y][x].obstacle == 0 && board[y][x].item == 0)
+                emptyCells.push_back({x, y});
+    for (auto& item : train.item) {
+        item.is_active = false;
+        if (emptyCells.empty()) continue;
+        size_t index = rand() % emptyCells.size();
+        item.on_board_pos = emptyCells[index];
+        emptyCells[index] = emptyCells.back();
+        emptyCells.pop_back();
+        item.pos = {train.Pos.right - train.Pos.left - 250, train.Pos.bottom - 40};
+        item.type = rand() % 4 + 1;
+        item.is_active = true;
+    }
 }
 
 void move_item(Train& train, Board board[MAP_TILES][MAP_TILES])

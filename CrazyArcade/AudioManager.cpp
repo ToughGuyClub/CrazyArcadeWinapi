@@ -50,6 +50,13 @@ bool Audio::Initialize() {
         Shutdown();
         return false;
     }
+    // Load before gameplay so the first effect does not block a game update.
+    for (const char* name : {"Bubble.wav", "Ballon.wav", "Acting.wav", "Die.wav", "Win.wav", "GameStart.wav"}) {
+        if (!Load(name, false)) { Shutdown(); return false; }
+    }
+    for (const char* name : {"Login.wav", "Menu.wav"}) {
+        if (!Load(name, true)) { Shutdown(); return false; }
+    }
     return true;
 }
 

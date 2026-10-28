@@ -22,6 +22,7 @@ class Bomb {
 public:
 	void make_Bomb(Player player,Board board[MAP_TILES][MAP_TILES]);
 	bool tick_Bomb();
+    void ResolveExplosion(Board board[MAP_TILES][MAP_TILES], Player& owner);
 	int collision_bomb_player(Bomb bomb, Player player);
 
 	int GetX() const { return pos.x; }

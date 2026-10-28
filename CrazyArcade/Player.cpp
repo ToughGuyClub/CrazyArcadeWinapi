@@ -48,7 +48,7 @@ void Player::Init_Player(POINT pos)
 
 void Player::Draw_Player(HDC hdc, Player* p, int character)
 {
-    if (p->GetIsHit()&& GetTickCount()%2==1)return;
+    if (p->GetIsHit()&& (GetTickCount64() / 100) % 2 == 1)return;
     int mapSize = min(WINDOW_WIDTH, WINDOW_HEIGHT);
     int tile = mapSize / MAP_TILES;
     int ox = (WINDOW_WIDTH - mapSize) / 2;
@@ -92,7 +92,7 @@ void Player::Draw_Player(HDC hdc, Player* p, int character)
         RGB(255, 0, 255)
     );
     SelectObject(memDC, oldBitmap);
-    SelectObject(memDC, oldBitmapmask);
+
     DeleteDC(memDC);
 }
 void Player::on_applebox(Player* player, int* applebox, int boxX, int boxY)
